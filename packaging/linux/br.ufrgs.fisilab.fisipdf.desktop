@@ -1,14 +1,14 @@
 [Desktop Entry]
 Type=Application
-Name=PdfCraft
-GenericName=PDF Editor
-Comment=Read, organize, combine, split and secure PDFs
-Exec=pdfcraft %U
-TryExec=pdfcraft
+Name=FisiPDF
+GenericName=Leitor e editor de PDF
+Comment=Leia, organize, combine, divida e proteja PDFs (Suíte FisiLab, UFRGS)
+Exec=fisipdf %U
+TryExec=fisipdf
 Icon=ai.storyteller.pdfcraft
 Terminal=false
 StartupNotify=true
-StartupWMClass=ai.storyteller.pdfcraft
+StartupWMClass=br.ufrgs.fisilab.fisipdf
 Categories=Office;Viewer;
 Keywords=pdf;viewer;editor;annotate;sign;forms;merge;split;
 MimeType=application/pdf;

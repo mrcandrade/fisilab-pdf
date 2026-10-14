@@ -1,16 +1,26 @@
-//! Where PdfCraft and the ArtCraft community live on the web. One table, so the Help menu, the
-//! About dialog, the home screen, the CLI and the README agree.
+//! Where FisiPDF, the Suíte FisiLab and the original PdfCraft project live on the web. One table,
+//! so the Help menu, the About dialog, the home screen, the CLI and the README agree.
+//!
+//! FisiPDF is the Suíte FisiLab (UFRGS) build of PdfCraft: the ArtCraft community links (Discord,
+//! getartcraft.com) were replaced by the suite's pages, the original project and our issue tracker.
 
 use icu_properties::props::Script;
 use std::path::{Path, PathBuf};
 
-/// The app's name in ArtCraft URLs (`getartcraft.com/apps/{APP}`, `github.com/storytold/{APP}`).
+/// The original project's name in its URLs (`github.com/storytold/{APP}`).
 pub const APP: &str = "pdfcraft";
+/// This build's name in its URLs (`github.com/mrcandrade/{SLUG}`).
+pub const SLUG: &str = "fisipdf";
 
-pub const DISCORD: &str = "https://discord.gg/artcraft";
-pub const WEBSITE: &str = "https://getartcraft.com";
-pub const APP_PAGE: &str = "https://getartcraft.com/apps/pdfcraft";
+/// The Suíte FisiLab page (source, installers, credits). Same as `fisilab_brand::SUITE_URL`; this
+/// crate stays free of egui, so the URL is repeated here and a ui-egui test keeps them equal.
+pub const SUITE: &str = "https://github.com/mrcandrade/larfic/tree/main/suite-fisilab";
+/// The manifesto for free technologies. Same as `fisilab_brand::MANIFESTO_URL`.
+pub const MANIFESTO: &str = "https://github.com/mrcandrade/larfic/blob/main/suite-fisilab/MANIFESTO.md";
+/// The original project, PdfCraft by the ArtCraft Team and contributors.
 pub const GITHUB: &str = "https://github.com/storytold/pdfcraft";
+/// Where FisiPDF problems are reported.
+pub const ISSUES: &str = "https://github.com/mrcandrade/fisipdf/issues";
 
 /// A link and the registry command that opens it.
 #[derive(Clone, Copy, Debug)]
@@ -22,12 +32,12 @@ pub struct Link {
     pub icon: &'static str,
 }
 
-/// In the order they are shown. Discord comes first: it is where people get help fastest.
+/// In the order they are shown.
 pub const LINKS: &[Link] = &[
-    Link { command: "help.discord", label: "Join the ArtCraft Discord", url: DISCORD, icon: "messages-square" },
-    Link { command: "help.app_page", label: "PdfCraft web page", url: APP_PAGE, icon: "globe" },
-    Link { command: "help.github", label: "PdfCraft on GitHub", url: GITHUB, icon: "code-xml" },
-    Link { command: "help.website", label: "ArtCraft website", url: WEBSITE, icon: "external-link" },
+    Link { command: "help.suite_site", label: "Site da Suíte FisiLab", url: SUITE, icon: "globe" },
+    Link { command: "help.manifesto", label: "Manifesto pelas tecnologias livres", url: MANIFESTO, icon: "book-open" },
+    Link { command: "help.github", label: "Projeto original (PdfCraft)", url: GITHUB, icon: "code-xml" },
+    Link { command: "help.report_issue", label: "Reportar um problema", url: ISSUES, icon: "triangle-alert" },
 ];
 
 pub fn for_command(id: &str) -> Option<&'static Link> {
@@ -521,9 +531,9 @@ mod tests {
     }
 
     #[test]
-    fn urls_follow_the_artcraft_scheme() {
-        assert_eq!(super::APP_PAGE, format!("{}/apps/{}", super::WEBSITE, super::APP));
+    fn urls_point_to_the_suite_and_the_original_project() {
         assert_eq!(super::GITHUB, format!("https://github.com/storytold/{}", super::APP));
+        assert_eq!(super::ISSUES, format!("https://github.com/mrcandrade/{}/issues", super::SLUG));
         for l in super::LINKS {
             assert!(l.url.starts_with("https://"), "{}", l.url);
             assert!(crate::commands::command(l.command).is_some(), "{} is a registered command", l.command);

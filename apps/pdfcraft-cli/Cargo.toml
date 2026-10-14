@@ -1,12 +1,13 @@
 [package]
 name = "pdfcraft-cli"
-description = "PdfCraft command-line tool: inspect, render and robustness-check PDFs"
+description = "FisiPDF command-line tool: inspect, render and robustness-check PDFs (based on PdfCraft)"
+default-run = "fisipdf-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "pdfcraft-cli"
+name = "fisipdf-cli"
 path = "src/main.rs"
 
 [lints]

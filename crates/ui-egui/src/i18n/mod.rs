@@ -562,6 +562,38 @@ mod tests {
     // These physical key-cap names remain English in several keyboard layouts. Only their
     // dedicated key context may use them unchanged; ordinary command labels still translate.
     const KEY_CAP_NAMES: &[&str] = &["Ctrl", "Shift", "Delete", "Esc", "Home", "End"];
+    // Suíte FisiLab (UFRGS): FisiPDF's own labels are Brazilian Portuguese in every catalog (the
+    // suite's names, its links and its themes), so they read the same in every language.
+    const FISILAB_PT_BR: &[&str] = &[
+        "Sobre a Suíte FisiLab…",
+        "Site da Suíte FisiLab",
+        "Manifesto pelas tecnologias livres",
+        "Projeto original (PdfCraft)",
+        "Reportar um problema",
+        "UFRGS Noite",
+        "UFRGS Dia",
+    ];
+
+    /// Every catalog has the suite's labels, unchanged, and the Help menu's label matches the
+    /// brand crate's.
+    #[test]
+    fn every_catalog_keeps_the_suite_labels_in_brazilian_portuguese() {
+        for lang in Lang::all().filter(|l| l.code() != "en") {
+            for label in FISILAB_PT_BR {
+                assert!(has(lang, label), "{} lacks {label}", lang.code());
+                // Right-to-left catalogs come back in display order, so only left-to-right ones
+                // are compared character for character.
+                if !lang.rtl() {
+                    assert_eq!(tr(lang, label), *label, "{}", lang.code());
+                }
+            }
+        }
+        assert!(FISILAB_PT_BR.contains(&fisilab_brand::ABOUT_MENU_LABEL));
+        assert_eq!(pdfcraft_engine::commands::command("help.fisilab").map(|c| c.label), Some(fisilab_brand::ABOUT_MENU_LABEL));
+        assert_eq!(pdfcraft_engine::links::SUITE, fisilab_brand::SUITE_URL);
+        assert_eq!(pdfcraft_engine::links::MANIFESTO, fisilab_brand::MANIFESTO_URL);
+        assert!(Lang::from_code(crate::DEFAULT_LANGUAGE).is_some());
+    }
 
     #[test]
     fn keyboard_key_names_have_a_separate_context_and_english_fallback() {
@@ -791,7 +823,8 @@ mod tests {
     #[test]
     fn missing_ocr_models_messages_are_translated() {
         let error = pdfcraft_engine::ocr::OcrError::NoModels.to_string();
-        let notice = "Text recognition isn't installed: its model files are missing. Reinstall PdfCraft, or set PDFCRAFT_MODELS to the folder that holds them.";
+        let notice =
+            "Text recognition isn't installed: its model files are missing. Reinstall FisiPDF, or set PDFCRAFT_MODELS to the folder that holds them.";
         assert!(include_str!("../ocr_ui.rs").contains(notice), "keep in step with ocr_ui.rs");
         for code in ["bg", "cs", "de", "es", "fr", "hu", "ja", "ru", "te", "uk", "zh-hans", "zh-hant"] {
             let lang = Lang::from_code(code).expect("registered");
@@ -1374,7 +1407,8 @@ mod tests {
         let edges = |s: &str| (s.len() - s.trim_start().len(), s.len() - s.trim_end().len());
         for e in &entries {
             let key_cap = e.context == "key" && KEY_CAP_NAMES.contains(&e.source.as_str());
-            assert!(e.source != e.translation || KEEP_AS_IS.contains(&e.source.as_str()) || key_cap, "{:?} is untranslated", e.source);
+            let suite = FISILAB_PT_BR.contains(&e.source.as_str());
+            assert!(e.source != e.translation || KEEP_AS_IS.contains(&e.source.as_str()) || key_cap || suite, "{:?} is untranslated", e.source);
             assert!(!e.translation.contains("..."), "use … rather than three dots: {:?}", e.translation);
             assert_eq!(edges(&e.translation), edges(&e.source), "stray whitespace: {:?}", e.translation);
         }
@@ -1486,6 +1520,7 @@ mod tests {
             assert!(
                 e.source != e.translation
                     || KEEP_AS_IS.contains(&e.source.as_str())
+                    || FISILAB_PT_BR.contains(&e.source.as_str())
                     || (e.context == "key" && KEY_CAP_NAMES.contains(&e.source.as_str())),
                 "{:?} is untranslated",
                 e.source
@@ -2254,7 +2289,7 @@ mod tests {
             "Virš kiekvieno žodžio prideda nematomą tekstą; puslapio vaizdas nesikeičia"
         );
         assert!(
-            tr(lt, "The fonts PdfCraft writes with can't draw “{c}” ({code}), so it shows as ? in every PDF viewer. The text is saved.")
+            tr(lt, "The fonts FisiPDF writes with can't draw “{c}” ({code}), so it shows as ? in every PDF viewer. The text is saved.")
                 .contains("visose PDF žiūryklėse")
         );
     }
@@ -2699,7 +2734,7 @@ mod tests {
             .iter()
             .filter(|e| {
                 let key_cap = e.context == "key" && KEY_CAP_NAMES.contains(&e.source.as_str());
-                e.source == e.translation && !keep.contains(&e.source.as_str()) && !key_cap
+                e.source == e.translation && !keep.contains(&e.source.as_str()) && !FISILAB_PT_BR.contains(&e.source.as_str()) && !key_cap
             })
             .collect();
         assert!(unchanged.is_empty(), "untranslated Ukrainian catalog entries: {unchanged:#?}");
@@ -2777,7 +2812,7 @@ mod tests {
             .iter()
             .filter(|e| {
                 let key_cap = e.context == "key" && KEY_CAP_NAMES.contains(&e.source.as_str());
-                e.source == e.translation && !keep.contains(&e.source.as_str()) && !key_cap
+                e.source == e.translation && !keep.contains(&e.source.as_str()) && !FISILAB_PT_BR.contains(&e.source.as_str()) && !key_cap
             })
             .collect();
         assert!(unchanged.is_empty(), "untranslated Kazakh catalog entries: {unchanged:#?}");
@@ -2955,7 +2990,7 @@ mod tests {
         // "حفظ باسم…" as typed; the ellipsis ends the phrase on the left.
         assert_eq!(tr(ar, "Save as…"), "…باسم حفظ");
         // Latin names keep their own direction inside the phrase.
-        assert_eq!(tr(ar, "About PdfCraft"), "PdfCraft حول");
+        assert_eq!(tr(ar, "About FisiPDF"), "FisiPDF حول");
         // A caption's colon stays beside the widget on its right.
         assert_eq!(tr(ar, "Name:"), "الاسم:");
         assert_eq!(tr(ar, "Issued by: "), "عن صادرة: ");

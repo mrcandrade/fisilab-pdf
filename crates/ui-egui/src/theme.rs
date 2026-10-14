@@ -1,39 +1,136 @@
 //! Design tokens and egui style (plan/acrobat/02-ui-ux.md §1: neutral chrome, white panels,
 //! one blue accent; Dark Gray keeps pages white). Every custom widget reads `Tokens::get`.
+//!
+//! FisiPDF (Suíte FisiLab, UFRGS) adds the suite's two themes, "UFRGS Noite" (dark, the default)
+//! and "UFRGS Dia" (light), built from `fisilab_brand::palette`. The upstream Light gray and Dark
+//! gray themes stay available.
 
 use std::sync::Arc;
 
 use egui::epaint::text::{FontTweak, HintingTarget, SmoothHinting};
 use egui::{Color32, CornerRadius, FontData, FontDefinitions, FontFamily, FontId, Rect, Response, Stroke, Vec2, Visuals};
+use fisilab_brand::palette::{DIA, NOITE, Tons};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub enum ThemeKind {
+    /// "UFRGS Noite": the Suíte FisiLab dark theme.
     #[default]
+    #[serde(rename = "ufrgsNoite", alias = "UfrgsNoite")]
+    UfrgsNoite,
+    /// "UFRGS Dia": the Suíte FisiLab light theme.
+    #[serde(rename = "ufrgsDia", alias = "UfrgsDia")]
+    UfrgsDia,
     Light,
     Dark,
+}
+
+impl ThemeKind {
+    /// Every theme, the suite's first.
+    pub const ALL: [ThemeKind; 4] = [ThemeKind::UfrgsNoite, ThemeKind::UfrgsDia, ThemeKind::Light, ThemeKind::Dark];
+
+    /// Dark colours (light text on dark surfaces).
+    pub fn is_dark(self) -> bool {
+        matches!(self, ThemeKind::UfrgsNoite | ThemeKind::Dark)
+    }
+
+    /// The Suíte FisiLab tones a theme is built from (`None` for the upstream gray themes).
+    pub fn brand(self) -> Option<&'static Tons> {
+        match self {
+            ThemeKind::UfrgsNoite => Some(&NOITE),
+            ThemeKind::UfrgsDia => Some(&DIA),
+            ThemeKind::Light | ThemeKind::Dark => None,
+        }
+    }
+
+    /// The theme's name in menus and Preferences (an English catalog key for the gray themes;
+    /// the suite's names are the same in every language).
+    pub fn label(self) -> &'static str {
+        match self {
+            ThemeKind::UfrgsNoite => "UFRGS Noite",
+            ThemeKind::UfrgsDia => "UFRGS Dia",
+            ThemeKind::Light => "Light gray",
+            ThemeKind::Dark => "Dark gray",
+        }
+    }
 }
 
 /// The saved user choice, independent of the light/dark colours currently displayed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub enum ThemePreference {
-    System,
+    /// "UFRGS Noite", the Suíte FisiLab default.
     #[default]
+    #[serde(rename = "ufrgsNoite", alias = "UfrgsNoite")]
+    UfrgsNoite,
+    /// "UFRGS Dia".
+    #[serde(rename = "ufrgsDia", alias = "UfrgsDia")]
+    UfrgsDia,
+    System,
     Light,
     Dark,
 }
 
 impl ThemePreference {
+    /// Every choice, in menu order (the suite's themes first).
+    pub const ALL: [ThemePreference; 5] =
+        [ThemePreference::UfrgsNoite, ThemePreference::UfrgsDia, ThemePreference::System, ThemePreference::Light, ThemePreference::Dark];
+
     /// The colours to draw. `system` is what the operating system says, `None` when it says
-    /// nothing; `fallback` is supplied by the caller. PdfCraft uses Light for an unknown desktop.
+    /// nothing; `fallback` is supplied by the caller. Following the system switches between the
+    /// suite's themes, UFRGS Noite and UFRGS Dia; FisiPDF uses UFRGS Noite for an unknown desktop.
     pub fn resolve(self, system: Option<bool>, fallback: ThemeKind) -> ThemeKind {
         match self {
+            Self::UfrgsNoite => ThemeKind::UfrgsNoite,
+            Self::UfrgsDia => ThemeKind::UfrgsDia,
             Self::Light => ThemeKind::Light,
             Self::Dark => ThemeKind::Dark,
             Self::System => match system {
-                Some(true) => ThemeKind::Dark,
-                Some(false) => ThemeKind::Light,
+                Some(true) => ThemeKind::UfrgsNoite,
+                Some(false) => ThemeKind::UfrgsDia,
                 None => fallback,
             },
+        }
+    }
+
+    /// The registry command that chooses it.
+    pub fn command(self) -> &'static str {
+        match self {
+            Self::UfrgsNoite => "view.theme.ufrgs_noite",
+            Self::UfrgsDia => "view.theme.ufrgs_dia",
+            Self::System => "view.theme.system",
+            Self::Light => "view.theme.light",
+            Self::Dark => "view.theme.dark",
+        }
+    }
+
+    /// Its name in menus (an English catalog key, or a suite name that is the same everywhere).
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::UfrgsNoite => "UFRGS Noite",
+            Self::UfrgsDia => "UFRGS Dia",
+            Self::System => "Use system setting",
+            Self::Light => "Light gray",
+            Self::Dark => "Dark gray",
+        }
+    }
+
+    /// The next choice when the title bar's theme button is clicked.
+    pub fn next(self) -> Self {
+        match self {
+            Self::UfrgsNoite => Self::UfrgsDia,
+            Self::UfrgsDia => Self::System,
+            Self::System => Self::Light,
+            Self::Light => Self::Dark,
+            Self::Dark => Self::UfrgsNoite,
+        }
+    }
+
+    /// The choice for a theme.
+    pub fn of(kind: ThemeKind) -> Self {
+        match kind {
+            ThemeKind::UfrgsNoite => Self::UfrgsNoite,
+            ThemeKind::UfrgsDia => Self::UfrgsDia,
+            ThemeKind::Light => Self::Light,
+            ThemeKind::Dark => Self::Dark,
         }
     }
 }
@@ -67,9 +164,29 @@ pub struct Tokens {
     pub radius: u8,
 }
 
+/// `fg` (premultiplied, possibly translucent) painted over the opaque `bg`, as one opaque colour.
+fn over(fg: Color32, bg: Color32) -> Color32 {
+    let rest = 255 - u16::from(fg.a());
+    // f + b * rest / 255 never exceeds 255 for a premultiplied colour (f <= a).
+    let channel = |f: u8, b: u8| u8::try_from((u16::from(f) + u16::from(b) * rest / 255).min(255)).unwrap_or(u8::MAX);
+    Color32::from_rgb(channel(fg.r(), bg.r()), channel(fg.g(), bg.g()), channel(fg.b(), bg.b()))
+}
+
+/// The opaque base colour of shadows: deep navy from the brand's darkest tone for the suite's
+/// themes, plain black for the upstream ones.
+fn shadow_base(kind: ThemeKind) -> Color32 {
+    match kind {
+        ThemeKind::UfrgsNoite => Color32::from_rgb(0x04, 0x07, 0x0B),
+        ThemeKind::UfrgsDia => fisilab_brand::palette::MARINHO,
+        ThemeKind::Light | ThemeKind::Dark => Color32::BLACK,
+    }
+}
+
 impl Tokens {
     pub fn for_kind(kind: ThemeKind) -> Self {
         match kind {
+            ThemeKind::UfrgsNoite => Self::from_brand(kind, &NOITE),
+            ThemeKind::UfrgsDia => Self::from_brand(kind, &DIA),
             ThemeKind::Light => Self {
                 kind,
                 titlebar: Color32::from_rgb(0xE9, 0xE9, 0xEB),
@@ -121,12 +238,66 @@ impl Tokens {
         }
     }
 
+    /// A Suíte FisiLab theme from the brand's tones (`fisilab_brand::palette`): fundo behind the
+    /// pages, painel for the chrome, elevado for cards and fields, the flame red as the accent.
+    /// The layout values (radius) are the upstream themes'.
+    fn from_brand(kind: ThemeKind, b: &Tons) -> Self {
+        let soft = over(b.selecao, b.painel);
+        Self {
+            kind,
+            // Between the workspace and the panels, as the upstream title bar sits a step darker
+            // than its chrome.
+            titlebar: b.fundo.lerp_to_gamma(b.painel, 0.5),
+            chrome: b.painel,
+            panel: b.painel,
+            pasteboard: b.fundo,
+            card: b.elevado,
+            border: b.borda,
+            divider: b.borda.lerp_to_gamma(b.painel, 0.4),
+            text: b.texto,
+            // texto_fraco nudged towards texto, so hints stay at WCAG AA on the workspace too.
+            text_muted: b.texto_fraco.lerp_to_gamma(b.texto, 0.3),
+            text_faint: b.texto_fraco.lerp_to_gamma(b.texto, 0.15),
+            icon: b.texto.lerp_to_gamma(b.texto_fraco, 0.35),
+            hover: b.hover,
+            pressed: b.ativo,
+            selected: soft.lerp_to_gamma(b.destaque, 0.12),
+            accent: b.destaque,
+            accent_text: if b.escuro { b.destaque_hover.lerp_to_gamma(b.texto, 0.25) } else { b.destaque },
+            accent_soft: soft,
+            field: b.elevado,
+            badge_new: b.destaque,
+            page_shadow: Self::shadow_of(kind, if b.escuro { 120 } else { 34 }),
+            radius: 6,
+        }
+    }
+
     pub fn get(ctx: &egui::Context) -> Self {
-        ctx.data(|d| d.get_temp::<Tokens>(egui::Id::new("pdfcraft-theme"))).unwrap_or_else(|| Self::for_kind(ThemeKind::Light))
+        ctx.data(|d| d.get_temp::<Tokens>(egui::Id::new("pdfcraft-theme"))).unwrap_or_else(|| Self::for_kind(ThemeKind::default()))
     }
 
     pub fn dark(&self) -> bool {
-        self.kind == ThemeKind::Dark
+        self.kind.is_dark()
+    }
+
+    fn shadow_of(kind: ThemeKind, alpha: u8) -> Color32 {
+        let c = shadow_base(kind);
+        Color32::from_rgba_unmultiplied(c.r(), c.g(), c.b(), alpha)
+    }
+
+    /// A shadow colour of this theme with `alpha` (0–255): tinted navy in the suite's themes,
+    /// black in the upstream ones.
+    pub fn shadow(&self, alpha: u8) -> Color32 {
+        Self::shadow_of(self.kind, alpha)
+    }
+
+    /// The fill and text colours of the inverted cards (toasts, progress notices).
+    pub fn inverted(&self) -> (Color32, Color32) {
+        match self.kind.brand() {
+            Some(b) => (b.texto, if b.escuro { b.fundo } else { b.elevado }),
+            None if self.dark() => (Color32::from_rgb(0xEC, 0xEC, 0xEF), Color32::from_rgb(0x22, 0x22, 0x26)),
+            None => (Color32::from_rgb(0x2A, 0x2A, 0x2F), Color32::WHITE),
+        }
     }
 }
 
@@ -391,12 +562,17 @@ pub fn apply(ctx: &egui::Context, kind: ThemeKind) {
     v.faint_bg_color = t.hover;
     v.selection.bg_fill = t.accent_soft;
     v.selection.stroke = Stroke::new(1.0, t.accent);
-    v.hyperlink_color = t.accent_text;
+    // Links and focus: the CTA/UFRGS blue in the suite's themes, the accent otherwise.
+    v.hyperlink_color = kind.brand().map_or(t.accent_text, |b| b.foco);
+    if let Some(b) = kind.brand() {
+        v.warn_fg_color = b.aviso;
+        v.error_fg_color = b.erro;
+    }
     v.override_text_color = Some(t.text);
     v.window_corner_radius = CornerRadius::same(10);
     v.menu_corner_radius = CornerRadius::same(8);
-    v.window_shadow = egui::Shadow { offset: [0, 8], blur: 28, spread: 0, color: Color32::from_black_alpha(if t.dark() { 110 } else { 38 }) };
-    v.popup_shadow = egui::Shadow { offset: [0, 4], blur: 16, spread: 0, color: Color32::from_black_alpha(if t.dark() { 90 } else { 30 }) };
+    v.window_shadow = egui::Shadow { offset: [0, 8], blur: 28, spread: 0, color: t.shadow(if t.dark() { 110 } else { 38 }) };
+    v.popup_shadow = egui::Shadow { offset: [0, 4], blur: 16, spread: 0, color: t.shadow(if t.dark() { 90 } else { 30 }) };
     for w in [&mut v.widgets.noninteractive, &mut v.widgets.inactive, &mut v.widgets.hovered, &mut v.widgets.active, &mut v.widgets.open] {
         w.corner_radius = CornerRadius::same(t.radius);
         w.fg_stroke.color = t.text;
@@ -628,21 +804,74 @@ mod tests {
         }
     }
 
-    /// "Use system setting" draws what the operating system says, dark or light.
+    /// "Use system setting" draws what the operating system says, dark or light, in the
+    /// suite's themes (UFRGS Noite / UFRGS Dia).
     #[test]
     fn following_the_system_draws_what_the_system_says() {
-        assert_eq!(ThemePreference::System.resolve(Some(true), ThemeKind::Light), ThemeKind::Dark);
-        assert_eq!(ThemePreference::System.resolve(Some(false), ThemeKind::Dark), ThemeKind::Light);
+        assert_eq!(ThemePreference::System.resolve(Some(true), ThemeKind::Light), ThemeKind::UfrgsNoite);
+        assert_eq!(ThemePreference::System.resolve(Some(false), ThemeKind::Dark), ThemeKind::UfrgsDia);
     }
 
     /// An operating system that says nothing leaves the last choice standing, and an explicit
-    /// Light or Dark is never overridden by what the system says.
+    /// theme is never overridden by what the system says.
     #[test]
     fn an_answerless_system_leaves_the_choice_and_an_explicit_one_stands() {
         assert_eq!(ThemePreference::System.resolve(None, ThemeKind::Light), ThemeKind::Light);
         assert_eq!(ThemePreference::System.resolve(None, ThemeKind::Dark), ThemeKind::Dark);
         assert_eq!(ThemePreference::Light.resolve(Some(true), ThemeKind::Dark), ThemeKind::Light);
         assert_eq!(ThemePreference::Dark.resolve(Some(false), ThemeKind::Light), ThemeKind::Dark);
+        assert_eq!(ThemePreference::UfrgsNoite.resolve(Some(false), ThemeKind::Light), ThemeKind::UfrgsNoite);
+        assert_eq!(ThemePreference::UfrgsDia.resolve(Some(true), ThemeKind::Dark), ThemeKind::UfrgsDia);
+    }
+
+    /// FisiPDF starts in UFRGS Noite, the Suíte FisiLab dark theme, listed first.
+    #[test]
+    fn ufrgs_noite_is_the_default_and_the_suite_themes_come_first() {
+        assert_eq!(ThemeKind::default(), ThemeKind::UfrgsNoite);
+        assert_eq!(ThemePreference::default(), ThemePreference::UfrgsNoite);
+        assert_eq!(ThemeKind::ALL[..2], [ThemeKind::UfrgsNoite, ThemeKind::UfrgsDia]);
+        assert_eq!(ThemePreference::ALL[..2], [ThemePreference::UfrgsNoite, ThemePreference::UfrgsDia]);
+        assert!(ThemeKind::UfrgsNoite.is_dark() && !ThemeKind::UfrgsDia.is_dark());
+        assert_eq!(ThemeKind::UfrgsNoite.label(), "UFRGS Noite");
+        assert_eq!(ThemeKind::UfrgsDia.label(), "UFRGS Dia");
+        assert_eq!(serde_json::to_value(ThemePreference::UfrgsNoite).unwrap(), "ufrgsNoite");
+        assert_eq!(serde_json::to_value(ThemePreference::UfrgsDia).unwrap(), "ufrgsDia");
+        assert_eq!(serde_json::from_value::<ThemePreference>("UfrgsDia".into()).unwrap(), ThemePreference::UfrgsDia);
+        // Every choice cycles back to itself through the title bar button.
+        for p in ThemePreference::ALL {
+            let mut q = p.next();
+            for _ in 0..ThemePreference::ALL.len() - 1 {
+                q = q.next();
+            }
+            assert_eq!(q, p);
+            assert!(pdfcraft_engine::commands::command(p.command()).is_some(), "{}", p.command());
+            if p != ThemePreference::System {
+                assert_eq!(ThemePreference::of(p.resolve(None, ThemeKind::Light)), p);
+            }
+        }
+    }
+
+    /// The suite's themes are made of the brand's tones.
+    #[test]
+    fn suite_themes_use_the_brand_palette() {
+        for (kind, b) in [(ThemeKind::UfrgsNoite, &NOITE), (ThemeKind::UfrgsDia, &DIA)] {
+            let t = Tokens::for_kind(kind);
+            assert_eq!(kind.brand(), Some(b));
+            assert_eq!((t.pasteboard, t.panel, t.chrome, t.card, t.field), (b.fundo, b.painel, b.painel, b.elevado, b.elevado));
+            assert_eq!((t.border, t.text, t.hover, t.pressed, t.accent), (b.borda, b.texto, b.hover, b.ativo, b.destaque));
+            assert_eq!(t.accent_soft.a(), 255, "opaque soft accent");
+            assert_eq!(t.dark(), b.escuro);
+            let ctx = egui::Context::default();
+            apply(&ctx, kind);
+            let v = ctx.global_style().visuals.clone();
+            assert_eq!(v.dark_mode, b.escuro);
+            assert_eq!(v.hyperlink_color, b.foco);
+            assert_eq!(v.panel_fill, b.painel);
+            assert_eq!((v.warn_fg_color, v.error_fg_color), (b.aviso, b.erro));
+            assert_eq!(Tokens::get(&ctx).kind, kind);
+        }
+        assert_eq!(ThemeKind::Light.brand(), None);
+        assert_eq!(ThemeKind::Dark.brand(), None);
     }
 
     /// WCAG 2 contrast ratio between two opaque colours.
@@ -674,7 +903,7 @@ mod tests {
     #[test]
     fn text_is_readable_on_every_surface() {
         // #76: the faintest text (hints, zoom level, captions) was 3.3:1 in the light theme.
-        for kind in [ThemeKind::Light, ThemeKind::Dark] {
+        for kind in ThemeKind::ALL {
             let t = Tokens::for_kind(kind);
             for (name, fg) in [("text", t.text), ("text_muted", t.text_muted), ("text_faint", t.text_faint)] {
                 for bg in [t.chrome, t.panel, t.card, t.pasteboard] {

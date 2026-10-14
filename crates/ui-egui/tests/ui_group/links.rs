@@ -1,5 +1,5 @@
-//! Community links: the Discord button is one click away everywhere; Help menu, About dialog and
-//! home screen open the ArtCraft and PdfCraft pages.
+//! Community links: the Suíte FisiLab button is one click away everywhere; Help menu, About dialog
+//! and home screen open the suite's pages, the original PdfCraft project and the issue tracker.
 
 use egui_kittest::Harness;
 use egui_kittest::kittest::Queryable;
@@ -18,28 +18,33 @@ fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> Harness<'static, P
 }
 
 #[test]
-fn discord_button_in_the_top_bar_opens_discord() {
+fn suite_button_in_the_top_bar_opens_the_suite_about_window() {
     let mut h = harness(|_| {});
-    h.get_by_label("Discord").click();
+    assert!(h.query_by_label("Discord").is_none(), "the ArtCraft Discord button is gone");
+    assert!(!fisilab_brand::about::is_open(&h.ctx));
+    h.get_by_label("Suíte FisiLab").click();
     h.run_steps(2);
-    assert_eq!(h.state().last_opened_url.as_deref(), Some(links::DISCORD));
-    assert_eq!(links::DISCORD, "https://discord.gg/artcraft");
+    assert!(fisilab_brand::about::is_open(&h.ctx));
 }
 
 #[test]
 fn home_screen_links() {
     for (label, url) in [
-        ("Join our Discord", links::DISCORD),
-        ("PdfCraft web page", "https://getartcraft.com/apps/pdfcraft"),
-        ("PdfCraft on GitHub", "https://github.com/storytold/pdfcraft"),
-        ("ArtCraft website", "https://getartcraft.com"),
+        ("Site da Suíte FisiLab", links::SUITE),
+        ("Manifesto pelas tecnologias livres", links::MANIFESTO),
+        ("Projeto original (PdfCraft)", "https://github.com/storytold/pdfcraft"),
+        ("Reportar um problema", "https://github.com/mrcandrade/fisipdf/issues"),
     ] {
         let mut h = harness(|_| {});
-        h.get_by_label("Join the ArtCraft community");
+        h.get_by_label("Parte da Suíte FisiLab");
         h.get_by_label(label).click();
         h.run_steps(2);
         assert_eq!(h.state().last_opened_url.as_deref(), Some(url), "{label}");
     }
+    let mut h = harness(|_| {});
+    h.get_by_label("Sobre a Suíte FisiLab").click();
+    h.run_steps(2);
+    assert!(fisilab_brand::about::is_open(&h.ctx));
 }
 
 #[test]
@@ -50,10 +55,11 @@ fn about_dialog_shows_the_brand_and_links() {
         app.open_bytes("one.pdf", None, pdf.to_vec()).unwrap();
         app.dialog = Some(Dialog::About);
     });
-    assert!(h.query_all_by_label("ArtCraft").count() >= 2, "the mark and the wordmark (alt text)");
-    h.get_by_label("Join our Discord").click();
+    assert!(h.query_all_by_label("ArtCraft").count() == 0, "no ArtCraft mark or wordmark");
+    assert!(h.query_all_by_label("FisiPDF").count() >= 1, "the FisiPDF icon (alt text) and name");
+    h.get_by_label("Reportar um problema").click();
     h.run_steps(2);
-    assert_eq!(h.state().last_opened_url.as_deref(), Some(links::DISCORD));
+    assert_eq!(h.state().last_opened_url.as_deref(), Some(links::ISSUES));
 }
 
 #[test]

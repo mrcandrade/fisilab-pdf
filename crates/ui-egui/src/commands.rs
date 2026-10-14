@@ -263,10 +263,18 @@ impl PdfCraftApp {
             "view.next_tab" => self.step_tab(true),
             "view.previous_tab" => self.step_tab(false),
             "view.theme" => {
-                let next = if self.theme == ThemeKind::Light { ThemePreference::Dark } else { ThemePreference::Light };
+                // Between the light and dark theme of the same family (UFRGS or gray).
+                let next = match self.theme {
+                    ThemeKind::UfrgsNoite => ThemePreference::UfrgsDia,
+                    ThemeKind::UfrgsDia => ThemePreference::UfrgsNoite,
+                    ThemeKind::Light => ThemePreference::Dark,
+                    ThemeKind::Dark => ThemePreference::Light,
+                };
                 self.set_theme_preference(next);
             }
             command if command.starts_with("measure.") => crate::measure_ui::command(self, command),
+            "view.theme.ufrgs_noite" => self.set_theme_preference(ThemePreference::UfrgsNoite),
+            "view.theme.ufrgs_dia" => self.set_theme_preference(ThemePreference::UfrgsDia),
             "view.theme.system" => self.set_theme_preference(ThemePreference::System),
             "view.theme.light" => self.set_theme_preference(ThemePreference::Light),
             "view.theme.dark" => self.set_theme_preference(ThemePreference::Dark),
@@ -632,6 +640,11 @@ impl PdfCraftApp {
             "page.split" => self.dialog = Some(Dialog::Split),
             "help.shortcuts" => self.dialog = Some(Dialog::Shortcuts),
             "help.about" => self.dialog = Some(Dialog::About),
+            // Suíte FisiLab: the suite's About window (fisilab-brand), drawn by `fisilab_brand::frame`.
+            "help.fisilab" => match &self.ctx {
+                Some(ctx) => fisilab_brand::about::open(ctx),
+                None => self.fisilab_about_pending = true,
+            },
             "help.check_updates" => self.check_for_updates(),
             _ => return false,
         }

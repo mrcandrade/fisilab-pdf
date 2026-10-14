@@ -270,28 +270,26 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                         });
                         ui.add_space(window_controls::SIDE_GAP - 4.0);
                     }
-                    let (icon, label) = match app.theme_preference {
-                        ThemePreference::System => ("monitor", tl!("Use system setting")),
-                        ThemePreference::Light => ("sun", tl!("Light gray")),
-                        ThemePreference::Dark => ("moon", tl!("Dark gray")),
+                    let icon = match app.theme_preference {
+                        ThemePreference::System => "monitor",
+                        ThemePreference::UfrgsDia | ThemePreference::Light => "sun",
+                        ThemePreference::UfrgsNoite | ThemePreference::Dark => "moon",
                     };
+                    let label = tl!(app.theme_preference.label());
                     let tip = format!("{}: {label}", tl!("Display theme"));
                     let response = icons::button(ui, icon, button, false, &tip);
-                    // A click cycles System, Light, Dark; a right-click opens the menu.
+                    // A click cycles UFRGS Noite, UFRGS Dia, System, Light, Dark; a right-click
+                    // opens the menu.
                     if response.clicked() {
-                        app.execute(match app.theme_preference {
-                            ThemePreference::System => "view.theme.light",
-                            ThemePreference::Light => "view.theme.dark",
-                            ThemePreference::Dark => "view.theme.system",
-                        });
+                        app.execute(app.theme_preference.next().command());
                     }
                     egui::Popup::context_menu(&response).id(response.id.with("theme_menu")).show(|ui| appearance_menu(app, ui));
                     if icons::button(ui, "circle-help", button, false, tl!("Keyboard shortcuts")).clicked() {
                         app.dialog = Some(Dialog::Shortcuts);
                     }
-                    // One click to the community, from anywhere in the app.
-                    if widgets::ghost_button_sized(ui, "messages-square", "Discord", tab_h).on_hover_text(pdfcraft_engine::links::DISCORD).clicked() {
-                        app.execute("help.discord");
+                    // Suíte FisiLab: one click to the suite's About window, from anywhere in the app.
+                    if widgets::ghost_button_sized(ui, "info", "Suíte FisiLab", tab_h).on_hover_text(fisilab_brand::ABOUT_MENU_LABEL).clicked() {
+                        app.execute("help.fisilab");
                     }
                 });
             });
@@ -300,13 +298,9 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
 
 /// Both theme entry points use the same choices and command path.
 fn theme_menu(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
-    for (preference, command, label) in [
-        (ThemePreference::System, "view.theme.system", "Use system setting"),
-        (ThemePreference::Light, "view.theme.light", "Light gray"),
-        (ThemePreference::Dark, "view.theme.dark", "Dark gray"),
-    ] {
-        if ui.add(widgets::radio(app.theme_preference == preference, tl!(label))).clicked() {
-            app.execute(command);
+    for preference in ThemePreference::ALL {
+        if ui.add(widgets::radio(app.theme_preference == preference, tl!(preference.label()))).clicked() {
+            app.execute(preference.command());
             ui.close();
         }
     }

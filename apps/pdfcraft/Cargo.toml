@@ -1,9 +1,14 @@
 [package]
 name = "pdfcraft"
-description = "PdfCraft desktop app"
+description = "FisiPDF desktop app (Suíte FisiLab; based on PdfCraft)"
+default-run = "fisipdf"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+
+[[bin]]
+name = "fisipdf"
+path = "src/main.rs"
 
 [lints]
 workspace = true
@@ -14,6 +19,7 @@ workspace = true
 ureq = { version = "3.4", default-features = false, features = ["rustls-no-provider", "_ring"] }
 rustls-native-certs = "0.8"
 pdfcraft-ui-egui = { workspace = true }
+fisilab-brand = { workspace = true }
 # `build_info`: the version and compile-time build label for `--version` and the log.
 pdfcraft-engine = { workspace = true }
 # wgpu draws; OpenGL (glow) is the fallback when wgpu can't start on an old or unusual GPU or

@@ -224,6 +224,8 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("view.focus_page_input", "Go to page…", VIEW, Some(Shortcut::cmd_shift("N")), Document, "text-cursor-input"),
     c("ui.dock.reset", "Reset panel layout", VIEW, None, Nothing, "settings"),
     c("view.theme", "Switch light / dark theme", None, None, Nothing, "moon"),
+    c("view.theme.ufrgs_noite", "UFRGS Noite", None, None, Nothing, "moon"),
+    c("view.theme.ufrgs_dia", "UFRGS Dia", None, None, Nothing, "sun"),
     c("view.theme.system", "Use system setting", None, None, Nothing, "settings"),
     c("view.theme.light", "Light gray", None, None, Nothing, "sun"),
     c("view.theme.dark", "Dark gray", None, None, Nothing, "moon"),
@@ -362,12 +364,14 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("page.split", "Split document…", PAGES, None, Assembly, "scissors"),
     c("page.number", "Number pages…", PAGES, None, Assembly, "hash"),
     c("help.shortcuts", "Keyboard shortcuts", HELP, None, Nothing, "circle-help"),
-    c("help.discord", "Join the ArtCraft Discord", HELP, None, Nothing, "messages-square"),
-    c("help.app_page", "PdfCraft web page", HELP, None, Nothing, "globe"),
-    c("help.github", "PdfCraft on GitHub", HELP, None, Nothing, "code-xml"),
-    c("help.website", "ArtCraft website", HELP, None, Nothing, "external-link"),
+    c("help.suite_site", "Site da Suíte FisiLab", HELP, None, Nothing, "globe"),
+    c("help.manifesto", "Manifesto pelas tecnologias livres", HELP, None, Nothing, "book-open"),
+    c("help.github", "Projeto original (PdfCraft)", HELP, None, Nothing, "code-xml"),
+    c("help.report_issue", "Reportar um problema", HELP, None, Nothing, "triangle-alert"),
     c("help.check_updates", "Check for updates…", HELP, None, Nothing, "cloud"),
-    c("help.about", "About PdfCraft", HELP, None, Nothing, "info"),
+    // Suíte FisiLab: the suite's About window (fisilab_brand::ABOUT_MENU_LABEL).
+    c("help.fisilab", "Sobre a Suíte FisiLab…", HELP, None, Nothing, "info"),
+    c("help.about", "About FisiPDF", HELP, None, Nothing, "info"),
 ];
 
 pub fn command(id: &str) -> Option<&'static CommandSpec> {

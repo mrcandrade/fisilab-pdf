@@ -395,21 +395,17 @@ pub fn toast(app: &mut PdfCraftApp, ctx: &egui::Context) {
         .pivot(Align2::CENTER_BOTTOM)
         .fixed_pos(screen.center_bottom() - vec2(0.0, lift))
         .show(ctx, |ui| {
-            egui::Frame::NONE
-                .fill(if t.dark() { Color32::from_rgb(0xEC, 0xEC, 0xEF) } else { Color32::from_rgb(0x2A, 0x2A, 0x2F) })
-                .corner_radius(CornerRadius::same(8))
-                .inner_margin(egui::Margin::symmetric(16, 10))
-                .show(ui, |ui| {
+            egui::Frame::NONE.fill(t.inverted().0).corner_radius(CornerRadius::same(8)).inner_margin(egui::Margin::symmetric(16, 10)).show(
+                ui,
+                |ui| {
                     // An Area remembers its previous content width. A short notice
                     // must not force the next validation message into a narrow column.
                     // Allow natural short labels; wrap longer ones within the viewport,
                     // including the frame's 32 points and 16-point outside margins.
                     ui.set_max_width((screen.width() - 64.0).clamp(1.0, 560.0));
-                    ui.add(
-                        egui::Label::new(egui::RichText::new(msg).color(if t.dark() { Color32::from_rgb(0x22, 0x22, 0x26) } else { Color32::WHITE }))
-                            .wrap(),
-                    );
-                });
+                    ui.add(egui::Label::new(egui::RichText::new(msg).color(t.inverted().1)).wrap());
+                },
+            );
         });
     ctx.request_repaint_after(std::time::Duration::from_millis(100));
 }
@@ -436,11 +432,7 @@ pub fn progress_notice(app: &PdfCraftApp, ctx: &egui::Context) -> bool {
     let t = Tokens::get(ctx);
     let screen = ctx.content_rect();
     // The same inverted card as the toast.
-    let (fill, text) = if t.dark() {
-        (Color32::from_rgb(0xEC, 0xEC, 0xEF), Color32::from_rgb(0x22, 0x22, 0x26))
-    } else {
-        (Color32::from_rgb(0x2A, 0x2A, 0x2F), Color32::WHITE)
-    };
+    let (fill, text) = t.inverted();
     let fraction = if p.fraction.is_finite() { p.fraction.clamp(0.0, 1.0) } else { 0.0 };
     let animated = crate::motion::animated(ctx);
     let shown = ctx.animate_value_with_time(egui::Id::new("progress-notice-bar"), fraction, if animated { 0.3 } else { 0.0 });
@@ -499,35 +491,57 @@ pub fn progress_notice(app: &PdfCraftApp, ctx: &egui::Context) -> bool {
     cancel
 }
 
-/// The ArtCraft wordmark (Storyteller's brand, docs/brand/; not open source), sized to `height`.
-pub fn artcraft_logo(ui: &mut egui::Ui, height: f32) -> Response {
-    let dark = ui.visuals().dark_mode;
-    let (uri, bytes): (&str, &'static [u8]) = if dark {
-        ("bytes://artcraft-logo-white.svg", include_bytes!("../../../docs/brand/artcraft-logo-white.svg"))
-    } else {
-        ("bytes://artcraft-logo.svg", include_bytes!("../../../docs/brand/artcraft-logo.svg"))
+/// The FisiPDF app icon (Suíte FisiLab, `assets/fisilab/fisipdf-128.png`), `size` points square.
+/// It replaces the ArtCraft mark, a trademark this build may not show.
+pub fn app_icon(ui: &mut egui::Ui, size: f32) -> Response {
+    let id = egui::Id::new("fisipdf-app-icon");
+    let cached = ui.ctx().data(|d| d.get_temp::<Option<egui::TextureHandle>>(id));
+    let texture = match cached {
+        Some(t) => t,
+        None => {
+            let t = decode_png(include_bytes!("../../../assets/fisilab/fisipdf-128.png"))
+                .map(|image| ui.ctx().load_texture("fisipdf-app-icon", image, egui::TextureOptions::LINEAR));
+            ui.ctx().data_mut(|d| d.insert_temp(id, t.clone()));
+            t
+        }
     };
-    ui.add(egui::Image::from_bytes(uri, bytes).max_height(height).alt_text("ArtCraft"))
+    match texture {
+        Some(t) => ui.add(
+            egui::Image::new(egui::load::SizedTexture::new(t.id(), vec2(size, size)))
+                .corner_radius(CornerRadius::same((size * 0.18).round().clamp(0.0, 255.0) as u8))
+                .alt_text("FisiPDF"),
+        ),
+        None => ui.allocate_exact_size(vec2(size, size), Sense::hover()).1,
+    }
 }
 
-/// The ArtCraft mark (brand blue, works on light and dark), `size` points square.
-pub fn artcraft_mark(ui: &mut egui::Ui, size: f32) -> Response {
-    ui.add(
-        egui::Image::from_bytes("bytes://artcraft-mark.svg", include_bytes!("../../../docs/brand/artcraft-mark.svg"))
-            .fit_to_exact_size(vec2(size, size))
-            .alt_text("ArtCraft"),
-    )
+/// An 8-bit RGB or RGBA PNG as an egui image (`None` for anything else or a broken file).
+fn decode_png(bytes: &[u8]) -> Option<egui::ColorImage> {
+    let mut decoder = png::Decoder::new(std::io::Cursor::new(bytes));
+    decoder.set_transformations(png::Transformations::normalize_to_color8());
+    let mut reader = decoder.read_info().ok()?;
+    let mut buf = vec![0; reader.output_buffer_size()?];
+    let info = reader.next_frame(&mut buf).ok()?;
+    let data = buf.get(..info.buffer_size())?;
+    let size = [usize::try_from(info.width).ok()?, usize::try_from(info.height).ok()?];
+    match info.color_type {
+        png::ColorType::Rgba => Some(egui::ColorImage::from_rgba_unmultiplied(size, data)),
+        png::ColorType::Rgb => Some(egui::ColorImage::from_rgb(size, data)),
+        _ => None,
+    }
 }
 
-/// Buttons for every community link (`pdfcraft_engine::links`), Discord first and prominent.
-/// Returns the registry command of the one clicked.
+/// Buttons for the Suíte FisiLab's About window and every link (`pdfcraft_engine::links`): the
+/// suite first and prominent. Returns the registry command of the one clicked.
 pub fn community_links(ui: &mut egui::Ui) -> Option<&'static str> {
     let mut clicked = None;
     ui.horizontal_wrapped(|ui| {
         ui.spacing_mut().item_spacing = vec2(8.0, 8.0);
-        for (i, l) in pdfcraft_engine::links::LINKS.iter().enumerate() {
-            let resp = if i == 0 { icon_pill(ui, l.icon, tl!("Join our Discord"), true) } else { icon_pill(ui, l.icon, tl!(l.label), false) };
-            if resp.on_hover_text(l.url).clicked() {
+        if icon_pill(ui, "info", "Sobre a Suíte FisiLab", true).on_hover_text(fisilab_brand::ABOUT_MENU_LABEL).clicked() {
+            clicked = Some("help.fisilab");
+        }
+        for l in pdfcraft_engine::links::LINKS {
+            if icon_pill(ui, l.icon, tl!(l.label), false).on_hover_text(l.url).clicked() {
                 clicked = Some(l.command);
             }
         }
@@ -628,7 +642,7 @@ mod tests {
     /// unselected radio button was white on white with no outline, so it couldn't be seen.
     #[test]
     fn checkboxes_and_radio_buttons_are_outlined_filled_and_distinct() {
-        for kind in [theme::ThemeKind::Light, theme::ThemeKind::Dark] {
+        for kind in theme::ThemeKind::ALL {
             let ctx = egui::Context::default();
             theme::apply(&ctx, kind);
             let t = Tokens::for_kind(kind);

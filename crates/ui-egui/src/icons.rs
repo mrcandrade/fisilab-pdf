@@ -154,7 +154,7 @@ mod tests {
             output.textures_delta.clear();
             (response.unwrap(), output.shapes)
         }
-        for theme in [crate::theme::ThemeKind::Dark, crate::theme::ThemeKind::Light] {
+        for theme in crate::theme::ThemeKind::ALL {
             for selected in [false, true] {
                 for enabled in [false, true] {
                     let old = egui::Context::default();

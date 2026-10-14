@@ -728,6 +728,8 @@ pub struct PdfCraftApp {
     ctx: Option<egui::Context>,
     styled: bool,
     fonts_ready: bool,
+    /// Help ▸ Sobre a Suíte FisiLab… ran before the app had a context: open it next frame.
+    fisilab_about_pending: bool,
     /// The CJK fallback order the installed fonts follow (see `theme::installed_font_definitions`).
     fonts_cjk: theme::CjkPreference,
     /// The window title last sent to the platform.
@@ -879,8 +881,9 @@ impl PdfCraftApp {
             quick_tool: QuickTool::Select,
             space_hand: None,
             comment_prefs: Default::default(),
-            theme: ThemeKind::Light,
-            theme_preference: ThemePreference::Light,
+            // Suíte FisiLab: UFRGS Noite until the user chooses another theme.
+            theme: ThemeKind::default(),
+            theme_preference: ThemePreference::default(),
             reading_colors: Default::default(),
             #[cfg(target_os = "linux")]
             desktop_theme: None,
@@ -1007,6 +1010,7 @@ impl PdfCraftApp {
             ctx: None,
             styled: false,
             fonts_ready: false,
+            fisilab_about_pending: false,
             fonts_cjk: theme::CjkPreference::Default,
             control: None,
             bookmark_rename: None,
@@ -1861,9 +1865,9 @@ impl PdfCraftApp {
             Err(e) => {
                 use pdfcraft_engine::links::BlockedLink;
                 let template = if matches!(e, BlockedLink::MailFile | BlockedLink::MailEncodedWord) {
-                    "{who} in this document tried to open an address PdfCraft won't open: {e}."
+                    "{who} in this document tried to open an address FisiPDF won't open: {e}."
                 } else {
-                    "{who} in this document tried to open an address PdfCraft won't open: {e}. Only web (http, https) and email (mailto) links open from documents."
+                    "{who} in this document tried to open an address FisiPDF won't open: {e}. Only web (http, https) and email (mailto) links open from documents."
                 };
                 self.notify_fmt(template, &[("who", tl!(origin.noun())), ("e", &e.to_string())]);
             }
@@ -1905,7 +1909,7 @@ impl PdfCraftApp {
             self.sync_theme(&ctx);
             theme::apply(&ctx, self.theme);
         } else {
-            self.theme = preference.resolve(None, ThemeKind::Light);
+            self.theme = preference.resolve(None, ThemeKind::default());
         }
     }
 
@@ -1953,7 +1957,7 @@ impl PdfCraftApp {
                 system = desktop.get().map(|appearance| appearance == pdfcraft_platform::desktop_theme::DesktopAppearance::Dark);
             }
         }
-        let kind = self.theme_preference.resolve(system, ThemeKind::Light);
+        let kind = self.theme_preference.resolve(system, ThemeKind::default());
         if kind != self.theme {
             self.theme = kind;
             theme::apply(ctx, kind);
@@ -2331,10 +2335,12 @@ impl PdfCraftApp {
             }
             ("theme", _) => {
                 let preference = match value {
+                    "ufrgsNoite" | "ufrgs-noite" | "noite" => ThemePreference::UfrgsNoite,
+                    "ufrgsDia" | "ufrgs-dia" | "dia" => ThemePreference::UfrgsDia,
                     "system" => ThemePreference::System,
                     "light" => ThemePreference::Light,
                     "dark" => ThemePreference::Dark,
-                    _ => return Err("theme must be light, dark, or system".into()),
+                    _ => return Err("theme must be ufrgsNoite, ufrgsDia, light, dark, or system".into()),
                 };
                 self.set_theme_preference(preference);
             }
@@ -2933,7 +2939,7 @@ impl eframe::App for PdfCraftApp {
             .and_then(|i| self.session.get(self.views[i].id))
             .map(|d| d.display_name())
             .or_else(|| self.combine_showing().then(|| tl!("Combine files").to_owned()))
-            .map_or_else(|| "PdfCraft".to_owned(), |name| format!("{name} — PdfCraft"));
+            .map_or_else(|| "FisiPDF".to_owned(), |name| format!("{name} — FisiPDF"));
         if title != self.window_title {
             ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
             self.window_title = title;
@@ -2954,6 +2960,7 @@ impl eframe::App for PdfCraftApp {
             self.show_progress(&ctx);
             widgets::toast(self, &ctx);
             self.finish_render_frame(&ctx);
+            self.fisilab_frame(&ctx);
             return;
         }
         self.sync_window_frame(&ctx);
@@ -2994,6 +3001,35 @@ impl eframe::App for PdfCraftApp {
         self.show_progress(&ctx);
         widgets::toast(self, &ctx);
         self.finish_render_frame(&ctx);
+        self.fisilab_frame(&ctx);
+    }
+}
+
+/// FisiPDF in the Suíte FisiLab (UFRGS): what the suite's About window and opening animation say
+/// about this app.
+pub const APP_INFO: fisilab_brand::AppInfo = fisilab_brand::AppInfo {
+    name: "FisiPDF",
+    tagline: "Leitor e editor de PDF",
+    equivalent: "Adobe Acrobat",
+    version: env!("CARGO_PKG_VERSION"),
+    upstream_name: "PdfCraft",
+    upstream_url: "https://github.com/storytold/pdfcraft",
+    upstream_copyright: "© 2026 ArtCraft Team e contribuidores do PdfCraft",
+};
+
+/// The interface language of a fresh FisiPDF install (the desktop app sets it before restoring
+/// saved settings): Brazilian Portuguese, for the UFRGS community.
+pub const DEFAULT_LANGUAGE: &str = "pt-br";
+
+impl PdfCraftApp {
+    /// The Suíte FisiLab layer, drawn over everything at the end of every frame once the fonts
+    /// are in: the "Sobre a Suíte FisiLab" window when open, and the opening animation (only in
+    /// the desktop binary, which calls `fisilab_brand::splash::enable`).
+    fn fisilab_frame(&mut self, ctx: &egui::Context) {
+        if std::mem::take(&mut self.fisilab_about_pending) {
+            fisilab_brand::about::open(ctx);
+        }
+        fisilab_brand::frame(ctx, &APP_INFO);
     }
 }
 
