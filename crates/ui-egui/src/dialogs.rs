@@ -1116,7 +1116,7 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
                         ui.label(
                             egui::RichText::new(
                                 "Leitor e editor de PDF da Suíte FisiLab, disponibilizado pelo FisiLab — LARFIC · UFRGS em parceria \
-                                 com o CTA — Centro de Tecnologia Acadêmica, para estudantes, professores e técnicos da UFRGS. \
+                                 com o CTA — Centro de Tecnologia Acadêmica, para democratizar o acesso à tecnologia entre os alunos da UFRGS. \
                                  Baseado no PdfCraft, do ArtCraft Team e contribuidores (MIT OR Apache-2.0).",
                             )
                             .color(t.text_muted),

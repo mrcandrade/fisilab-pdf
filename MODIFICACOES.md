@@ -2,7 +2,7 @@
 
 O **FisiLab PDF** (nome curto **PDF**) é a versão do [PdfCraft](https://github.com/storytold/pdfcraft) (versão 0.8.0)
 disponibilizada pelo **FisiLab — LARFIC · UFRGS** em parceria com o **CTA — Centro de Tecnologia
-Acadêmica**, como parte da Suíte FisiLab, para estudantes, professores e técnicos da UFRGS.
+Acadêmica**, como parte da Suíte FisiLab, para democratizar o acesso à tecnologia entre os alunos da UFRGS.
 O código continua sob a licença MIT ou Apache 2.0, à escolha de quem o usa. Este arquivo lista o
 que foi alterado e por quê.
 

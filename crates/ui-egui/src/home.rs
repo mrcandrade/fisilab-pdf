@@ -45,7 +45,7 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                             ui.label(
                                 egui::RichText::new(
                                     "Software livre disponibilizado pelo FisiLab — LARFIC · UFRGS em parceria com o CTA — Centro de \
-                                     Tecnologia Acadêmica, para estudantes, professores e técnicos da UFRGS.",
+                                     Tecnologia Acadêmica, para democratizar o acesso à tecnologia entre os alunos da UFRGS.",
                                 )
                                 .color(t.text_muted),
                             );
