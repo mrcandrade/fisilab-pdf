@@ -72,6 +72,7 @@ que foi alterado e por quê.
   atualização disponível, ferramentas e instruções do servidor MCP, User-Agent), o programa é
   chamado de **FisiLab PDF**; título da janela, tela inicial, Sobre e menus continuam "PDF".
 - O empacotamento Linux (AppImage `FisiLab-PDF-<versão>-x86_64.AppImage` e .deb `fisilab-pdf_<versão>_amd64.deb`, em `packaging/linux/`) usa os novos nomes, ícones da suíte e o identificador `br.ufrgs.fisilab.pdf`.
+- O empacotamento macOS (DMG universal `FisiLab-PDF-<versão>-macOS.dmg`, em `packaging/macos/`) usa os novos nomes, o ícone da suíte e o identificador `br.ufrgs.fisilab.pdf`.
 
 ## 5. Idioma
 
