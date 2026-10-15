@@ -371,7 +371,7 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("help.check_updates", "Check for updates…", HELP, None, Nothing, "cloud"),
     // Suíte FisiLab: the suite's About window (fisilab_brand::ABOUT_MENU_LABEL).
     c("help.fisilab", "Sobre a Suíte FisiLab…", HELP, None, Nothing, "info"),
-    c("help.about", "About FisiPDF", HELP, None, Nothing, "info"),
+    c("help.about", "About PDF", HELP, None, Nothing, "info"),
 ];
 
 pub fn command(id: &str) -> Option<&'static CommandSpec> {

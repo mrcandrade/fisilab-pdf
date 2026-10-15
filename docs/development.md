@@ -50,10 +50,10 @@ do not contact a desktop session bus. Page and document colours retain their exi
 ## Logs
 
 The desktop app writes its `log` records to standard error and to `logs/pdfcraft.log` in its
-settings folder, next to `app.ron`: Linux and FreeBSD `~/.local/share/pdfcraft/logs/` (or
-`$XDG_DATA_HOME/pdfcraft/logs/`), macOS `~/Library/Application Support/PdfCraft/logs/`, Windows
-`%APPDATA%\PdfCraft\data\logs\`. In portable mode (a `portable.txt` file next to the executable, as
-the Windows portable zip ships) the settings folder is `PdfCraftData\` beside the executable, and
+settings folder, next to `app.ron`: Linux and FreeBSD `~/.local/share/fisilab-pdf/logs/` (or
+`$XDG_DATA_HOME/fisilab-pdf/logs/`), macOS `~/Library/Application Support/FisiLab PDF/logs/`, Windows
+`%APPDATA%\FisiLab PDF\data\logs\`. In portable mode (a `portable.txt` file next to the executable, as
+the Windows portable zip ships) the settings folder is `FisiLabPDFData\` beside the executable, and
 crash recovery and new digital IDs go there too. A start from a desktop menu, Finder or the Start
 menu has no terminal, so this file is what to attach to a bug report: a failed autosave, a page that
 would not render, a render worker that could not start and the report of an internal error all land
@@ -62,7 +62,8 @@ Each launch moves the previous log to `pdfcraft.1.log` (and that one to `pdfcraf
 log of a run that crashed survives the next start. The file stops growing at 16 MiB. `--version`
 writes no file.
 
-By default PdfCraft's own crates (`pdfcraft*`) log at `info` and everything else at `warn`.
+By default PdfCraft's own crates (`pdfcraft*`) and the desktop binary (`fisilab_pdf`) log at `info`
+and everything else at `warn`.
 `RUST_LOG` replaces that with env_logger-style directives, for example `RUST_LOG=debug`,
 `RUST_LOG=warn,pdfcraft_render=trace` or `RUST_LOG=info,wgpu_core=warn`; a directive ending in `*`
 covers every target starting with it (`pdfcraft*=debug`). The logger is

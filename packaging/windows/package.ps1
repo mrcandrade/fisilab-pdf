@@ -145,7 +145,7 @@ if ($env:CRAFT_FONTS_DIR) {
   }
 }
 # portable.txt beside pdfcraft.exe switches on portable mode: settings, logs, recovery files and new
-# digital IDs go to PdfCraftData\ next to the exe instead of %APPDATA% (#157; see
+# digital IDs go to FisiLabPDFData\ next to the exe instead of %APPDATA% (#157; see
 # crates/ui-egui/src/portable.rs).
 Copy-Item (Join-Path $PSScriptRoot 'portable.txt') $Portable
 $Zip = Join-Path $Dist "pdfcraft-$Version-windows-$Arch-portable.zip"

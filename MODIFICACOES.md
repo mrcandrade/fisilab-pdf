@@ -1,6 +1,6 @@
-# Modificações do FisiPDF em relação ao PdfCraft
+# Modificações do FisiLab PDF em relação ao PdfCraft
 
-O **FisiPDF** é a versão do [PdfCraft](https://github.com/storytold/pdfcraft) (versão 0.8.0)
+O **FisiLab PDF** (nome curto **PDF**) é a versão do [PdfCraft](https://github.com/storytold/pdfcraft) (versão 0.8.0)
 disponibilizada pelo **FisiLab — LARFIC · UFRGS** em parceria com o **CTA — Centro de Tecnologia
 Acadêmica**, como parte da Suíte FisiLab, para estudantes, professores e técnicos da UFRGS.
 O código continua sob a licença MIT ou Apache 2.0, à escolha de quem o usa. Este arquivo lista o
@@ -8,15 +8,15 @@ que foi alterado e por quê.
 
 ## 1. Nome e marca
 
-- O nome exibido passou de **PdfCraft** para **FisiPDF** em todo lugar que a pessoa vê: título e
-  ícone da janela, tela inicial, menus ("Sobre o FisiPDF"), diálogos, avisos, mensagens de erro,
+- O nome exibido passou de **PdfCraft** para **PDF** em todo lugar que a pessoa vê: título e
+  ícone da janela, tela inicial, menus ("Sobre o PDF"), diálogos, avisos, mensagens de erro,
   janela "Sobre", texto de ajuda e versão da linha de comando, descrições do servidor MCP e os
   catálogos de tradução (`crates/ui-egui/src/i18n/*.tsv`, chaves e traduções juntas).
 - O nome **ArtCraft**, o logotipo e o símbolo (`docs/brand/`) são marcas registradas que a licença
   do projeto não cobre e que versões modificadas devem remover (veja o NOTICE original). Foram
   apagados `docs/brand/`, a captura de tela `docs/images/pdfcraft-tools.png` (que mostrava o
   símbolo), as funções que os desenhavam na interface e as entradas correspondentes em
-  `ATTRIBUTION.toml`. No lugar do símbolo aparece o ícone do FisiPDF.
+  `ATTRIBUTION.toml`. No lugar do símbolo aparece o ícone do PDF.
 - O crédito em texto ao PdfCraft e ao ArtCraft Team foi mantido e ampliado (janela Sobre, tela
   inicial, NOTICE, README).
 
@@ -34,9 +34,9 @@ que foi alterado e por quê.
 - Tela de abertura (cerca de 3 s, pode ser pulada com um clique ou tecla; `FISILAB_NO_SPLASH=1`
   a desliga), chamada em `apps/pdfcraft/src/main.rs`.
 - Novo item **Ajuda → Sobre a Suíte FisiLab…** (comando `help.fisilab`) e um botão "Suíte
-  FisiLab" na barra de abas, no lugar do botão do Discord. A janela "Sobre o FisiPDF" original,
+  FisiLab" na barra de abas, no lugar do botão do Discord. A janela "Sobre o PDF" original,
   que credita os contribuidores do PdfCraft, foi mantida.
-- Ícone do aplicativo: `assets/fisilab/fisipdf.ico` no executável e `fisipdf-256.png` na janela.
+- Ícone do aplicativo: `assets/fisilab/fisilab-pdf.ico` no executável e `fisilab-pdf-256.png` na janela.
 
 ## 3. Links da comunidade e serviços externos
 
@@ -44,26 +44,33 @@ que foi alterado e por quê.
   (`crates/engine/src/links.rs`, menu Ajuda, tela inicial, janela Sobre e `--version` da CLI)
   foram trocados por: **Site da Suíte FisiLab**, **Manifesto pelas tecnologias livres**,
   **Projeto original (PdfCraft)** e **Reportar um problema**
-  (`https://github.com/mrcandrade/fisipdf/issues`).
+  (`https://github.com/mrcandrade/fisilab-pdf/issues`).
 - **Verificar atualizações** (só quando a pessoa pede; não há verificação automática) consulta as
-  versões de `github.com/mrcandrade/fisipdf`, não mais as do PdfCraft.
+  versões de `github.com/mrcandrade/fisilab-pdf`, não mais as do PdfCraft.
 - O PdfCraft não tem telemetria nem envio de relatórios de erro; nada foi encontrado que
   contatasse a infraestrutura do ArtCraft além dos links acima. Os modelos de OCR continuam sendo
   baixados, apenas na hora de empacotar (`cargo xtask models`), do servidor público do projeto ocrs.
 
 ## 4. Executáveis, identificadores e pastas
 
-- Executáveis: `fisipdf.exe` (aplicativo) e `fisipdf-cli.exe` (linha de comando), por `[[bin]]`
+- Executáveis: `fisilab-pdf.exe` (aplicativo) e `fisilab-pdf-cli.exe` (linha de comando), por `[[bin]]`
   nos crates `apps/pdfcraft` e `apps/pdfcraft-cli`; os nomes dos pacotes Rust não mudaram.
-- Recursos do Windows (VERSIONINFO): ProductName FisiPDF, descrição, empresa FisiLab — LARFIC/UFRGS
+- Recursos do Windows (VERSIONINFO): ProductName PDF, descrição, empresa FisiLab — LARFIC/UFRGS
   e direitos autorais com crédito ao PdfCraft.
-- Identificador do aplicativo `br.ufrgs.fisilab.fisipdf` (antes `ai.storyteller.pdfcraft`).
-- Pastas próprias, para não colidir com uma instalação do PdfCraft: configurações em
-  `%APPDATA%\FisiPDF`, recuperação, área de transferência e canal de instância única em
-  `%LOCALAPPDATA%\FisiPDF`, modo portátil em `FisiPDFData` (marcadores `portable.txt` ou
-  `FisiPDF.portable`). A migração automática das pastas do antigo nome PrintCraft foi removida.
+- Identificador do aplicativo `br.ufrgs.fisilab.pdf` (antes `ai.storyteller.pdfcraft`).
+- Pastas próprias, para não colidir com uma instalação do PdfCraft nem com outro programa (nunca
+  uma pasta chamada só "PDF"): configurações em `%APPDATA%\FisiLab PDF\data` (macOS
+  `~/Library/Application Support/FisiLab PDF`, Linux `~/.local/share/fisilab-pdf`); recuperação,
+  área de transferência e canal de instância única em `%LOCALAPPDATA%\FisiLab PDF` (macOS
+  `~/Library/Application Support/FisiLab PDF/Recovery` e `~/Library/Caches/FisiLab PDF/Clipboard`,
+  Linux `~/.local/share/fisilab-pdf/recovery` e `~/.cache/fisilab-pdf/clipboard`); modo portátil em
+  `FisiLabPDFData` (marcadores `portable.txt` ou `FisiLabPDF.portable`). A migração automática das
+  pastas do antigo nome PrintCraft foi removida.
 - Metadados gravados em PDFs novos (Producer, autor padrão de comentários, nome do aplicativo
-  nas assinaturas) dizem FisiPDF.
+  nas assinaturas) dizem FisiLab PDF.
+- Onde o nome curto "PDF" seria confundido com o formato de arquivo (avisos, mensagens de erro,
+  atualização disponível, ferramentas e instruções do servidor MCP, User-Agent), o programa é
+  chamado de **FisiLab PDF**; título da janela, tela inicial, Sobre e menus continuam "PDF".
 
 ## 5. Idioma
 
@@ -75,10 +82,10 @@ que foi alterado e por quê.
 ## 6. Outros
 
 - Removida a pasta `.github/` (integração contínua, lançamentos e modelos do projeto original).
-- `NOTICE` ganhou um cabeçalho do FisiPDF; o texto original foi mantido abaixo dele.
+- `NOTICE` ganhou um cabeçalho do FisiLab PDF; o texto original foi mantido abaixo dele.
 - O `README.md` original virou `README.upstream.md`; o novo `README.md` está em português.
 - `packaging/windows/portable.txt` foi traduzido e aponta para as novas pastas.
-- O arquivo `.desktop` do Linux passou a se chamar `br.ufrgs.fisilab.fisipdf.desktop`.
+- O arquivo `.desktop` do Linux passou a se chamar `br.ufrgs.fisilab.pdf.desktop`.
 
 ## O que não mudou
 

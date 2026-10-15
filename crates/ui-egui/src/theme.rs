@@ -1,7 +1,7 @@
 //! Design tokens and egui style (plan/acrobat/02-ui-ux.md §1: neutral chrome, white panels,
 //! one blue accent; Dark Gray keeps pages white). Every custom widget reads `Tokens::get`.
 //!
-//! FisiPDF (Suíte FisiLab, UFRGS) adds the suite's two themes, "UFRGS Noite" (dark, the default)
+//! PDF (Suíte FisiLab, UFRGS) adds the suite's two themes, "UFRGS Noite" (dark, the default)
 //! and "UFRGS Dia" (light), built from `fisilab_brand::palette`. The upstream Light gray and Dark
 //! gray themes stay available.
 
@@ -76,7 +76,7 @@ impl ThemePreference {
 
     /// The colours to draw. `system` is what the operating system says, `None` when it says
     /// nothing; `fallback` is supplied by the caller. Following the system switches between the
-    /// suite's themes, UFRGS Noite and UFRGS Dia; FisiPDF uses UFRGS Noite for an unknown desktop.
+    /// suite's themes, UFRGS Noite and UFRGS Dia; PDF uses UFRGS Noite for an unknown desktop.
     pub fn resolve(self, system: Option<bool>, fallback: ThemeKind) -> ThemeKind {
         match self {
             Self::UfrgsNoite => ThemeKind::UfrgsNoite,
@@ -824,7 +824,7 @@ mod tests {
         assert_eq!(ThemePreference::UfrgsDia.resolve(Some(true), ThemeKind::Dark), ThemeKind::UfrgsDia);
     }
 
-    /// FisiPDF starts in UFRGS Noite, the Suíte FisiLab dark theme, listed first.
+    /// PDF starts in UFRGS Noite, the Suíte FisiLab dark theme, listed first.
     #[test]
     fn ufrgs_noite_is_the_default_and_the_suite_themes_come_first() {
         assert_eq!(ThemeKind::default(), ThemeKind::UfrgsNoite);

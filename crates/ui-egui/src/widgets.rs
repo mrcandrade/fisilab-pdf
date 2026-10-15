@@ -491,16 +491,16 @@ pub fn progress_notice(app: &PdfCraftApp, ctx: &egui::Context) -> bool {
     cancel
 }
 
-/// The FisiPDF app icon (Suíte FisiLab, `assets/fisilab/fisipdf-128.png`), `size` points square.
+/// The PDF app icon (Suíte FisiLab, `assets/fisilab/fisilab-pdf-128.png`), `size` points square.
 /// It replaces the ArtCraft mark, a trademark this build may not show.
 pub fn app_icon(ui: &mut egui::Ui, size: f32) -> Response {
-    let id = egui::Id::new("fisipdf-app-icon");
+    let id = egui::Id::new("fisilab-pdf-app-icon");
     let cached = ui.ctx().data(|d| d.get_temp::<Option<egui::TextureHandle>>(id));
     let texture = match cached {
         Some(t) => t,
         None => {
-            let t = decode_png(include_bytes!("../../../assets/fisilab/fisipdf-128.png"))
-                .map(|image| ui.ctx().load_texture("fisipdf-app-icon", image, egui::TextureOptions::LINEAR));
+            let t = decode_png(include_bytes!("../../../assets/fisilab/fisilab-pdf-128.png"))
+                .map(|image| ui.ctx().load_texture("fisilab-pdf-app-icon", image, egui::TextureOptions::LINEAR));
             ui.ctx().data_mut(|d| d.insert_temp(id, t.clone()));
             t
         }
@@ -509,7 +509,7 @@ pub fn app_icon(ui: &mut egui::Ui, size: f32) -> Response {
         Some(t) => ui.add(
             egui::Image::new(egui::load::SizedTexture::new(t.id(), vec2(size, size)))
                 .corner_radius(CornerRadius::same((size * 0.18).round().clamp(0.0, 255.0) as u8))
-                .alt_text("FisiPDF"),
+                .alt_text("PDF"),
         ),
         None => ui.allocate_exact_size(vec2(size, size), Sense::hover()).1,
     }

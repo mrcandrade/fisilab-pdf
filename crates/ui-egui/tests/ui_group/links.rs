@@ -33,7 +33,7 @@ fn home_screen_links() {
         ("Site da Suíte FisiLab", links::SUITE),
         ("Manifesto pelas tecnologias livres", links::MANIFESTO),
         ("Projeto original (PdfCraft)", "https://github.com/storytold/pdfcraft"),
-        ("Reportar um problema", "https://github.com/mrcandrade/fisipdf/issues"),
+        ("Reportar um problema", "https://github.com/mrcandrade/fisilab-pdf/issues"),
     ] {
         let mut h = harness(|_| {});
         h.get_by_label("Parte da Suíte FisiLab");
@@ -56,7 +56,7 @@ fn about_dialog_shows_the_brand_and_links() {
         app.dialog = Some(Dialog::About);
     });
     assert!(h.query_all_by_label("ArtCraft").count() == 0, "no ArtCraft mark or wordmark");
-    assert!(h.query_all_by_label("FisiPDF").count() >= 1, "the FisiPDF icon (alt text) and name");
+    assert!(h.query_all_by_label("PDF").count() >= 1, "the PDF icon (alt text) and name");
     h.get_by_label("Reportar um problema").click();
     h.run_steps(2);
     assert_eq!(h.state().last_opened_url.as_deref(), Some(links::ISSUES));

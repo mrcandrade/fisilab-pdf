@@ -562,7 +562,7 @@ mod tests {
     // These physical key-cap names remain English in several keyboard layouts. Only their
     // dedicated key context may use them unchanged; ordinary command labels still translate.
     const KEY_CAP_NAMES: &[&str] = &["Ctrl", "Shift", "Delete", "Esc", "Home", "End"];
-    // Suíte FisiLab (UFRGS): FisiPDF's own labels are Brazilian Portuguese in every catalog (the
+    // Suíte FisiLab (UFRGS): FisiLab PDF's own labels are Brazilian Portuguese in every catalog (the
     // suite's names, its links and its themes), so they read the same in every language.
     const FISILAB_PT_BR: &[&str] = &[
         "Sobre a Suíte FisiLab…",
@@ -824,7 +824,7 @@ mod tests {
     fn missing_ocr_models_messages_are_translated() {
         let error = pdfcraft_engine::ocr::OcrError::NoModels.to_string();
         let notice =
-            "Text recognition isn't installed: its model files are missing. Reinstall FisiPDF, or set PDFCRAFT_MODELS to the folder that holds them.";
+            "Text recognition isn't installed: its model files are missing. Reinstall FisiLab PDF, or set PDFCRAFT_MODELS to the folder that holds them.";
         assert!(include_str!("../ocr_ui.rs").contains(notice), "keep in step with ocr_ui.rs");
         for code in ["bg", "cs", "de", "es", "fr", "hu", "ja", "ru", "te", "uk", "zh-hans", "zh-hant"] {
             let lang = Lang::from_code(code).expect("registered");
@@ -2289,7 +2289,7 @@ mod tests {
             "Virš kiekvieno žodžio prideda nematomą tekstą; puslapio vaizdas nesikeičia"
         );
         assert!(
-            tr(lt, "The fonts FisiPDF writes with can't draw “{c}” ({code}), so it shows as ? in every PDF viewer. The text is saved.")
+            tr(lt, "The fonts FisiLab PDF writes with can't draw “{c}” ({code}), so it shows as ? in every PDF viewer. The text is saved.")
                 .contains("visose PDF žiūryklėse")
         );
     }
@@ -2990,7 +2990,7 @@ mod tests {
         // "حفظ باسم…" as typed; the ellipsis ends the phrase on the left.
         assert_eq!(tr(ar, "Save as…"), "…باسم حفظ");
         // Latin names keep their own direction inside the phrase.
-        assert_eq!(tr(ar, "About FisiPDF"), "FisiPDF حول");
+        assert_eq!(tr(ar, "About PDF"), "PDF حول");
         // A caption's colon stays beside the widget on its right.
         assert_eq!(tr(ar, "Name:"), "الاسم:");
         assert_eq!(tr(ar, "Issued by: "), "عن صادرة: ");

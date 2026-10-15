@@ -1,10 +1,10 @@
-FisiPDF — modo portátil (Suíte FisiLab, UFRGS)
+FisiLab PDF — modo portátil (Suíte FisiLab, UFRGS)
 
-Enquanto este arquivo estiver ao lado de fisipdf.exe, o FisiPDF guarda as configurações, os
-arquivos de log, os salvamentos automáticos de recuperação e as novas identidades digitais na
-pasta FisiPDFData, ao lado dele, e não grava nada em %APPDATA% nem em %LOCALAPPDATA%. Copie a
-pasta inteira para levar o FisiPDF com as suas configurações.
+Enquanto este arquivo estiver ao lado de fisilab-pdf.exe, o FisiLab PDF guarda as configurações,
+os arquivos de log, os salvamentos automáticos de recuperação e as novas identidades digitais na
+pasta FisiLabPDFData, ao lado dele, e não grava nada em %APPDATA% nem em %LOCALAPPDATA%. Copie a
+pasta inteira para levar o FisiLab PDF com as suas configurações.
 
-Apague este arquivo para usar as pastas normais do usuário (%APPDATA%\FisiPDF e
-%LOCALAPPDATA%\FisiPDF). Se a pasta FisiPDFData não puder ser gravada (por exemplo, num disco
-somente leitura), o FisiPDF avisa e usa as pastas do usuário.
+Apague este arquivo para usar as pastas normais do usuário (%APPDATA%\FisiLab PDF e
+%LOCALAPPDATA%\FisiLab PDF). Se a pasta FisiLabPDFData não puder ser gravada (por exemplo, num
+disco somente leitura), o FisiLab PDF avisa e usa as pastas do usuário.

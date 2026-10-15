@@ -1,7 +1,7 @@
-//! Where FisiPDF, the Suíte FisiLab and the original PdfCraft project live on the web. One table,
+//! Where PDF, the Suíte FisiLab and the original PdfCraft project live on the web. One table,
 //! so the Help menu, the About dialog, the home screen, the CLI and the README agree.
 //!
-//! FisiPDF is the Suíte FisiLab (UFRGS) build of PdfCraft: the ArtCraft community links (Discord,
+//! PDF is the Suíte FisiLab (UFRGS) build of PdfCraft: the ArtCraft community links (Discord,
 //! getartcraft.com) were replaced by the suite's pages, the original project and our issue tracker.
 
 use icu_properties::props::Script;
@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 /// The original project's name in its URLs (`github.com/storytold/{APP}`).
 pub const APP: &str = "pdfcraft";
 /// This build's name in its URLs (`github.com/mrcandrade/{SLUG}`).
-pub const SLUG: &str = "fisipdf";
+pub const SLUG: &str = "fisilab-pdf";
 
 /// The Suíte FisiLab page (source, installers, credits). Same as `fisilab_brand::SUITE_URL`; this
 /// crate stays free of egui, so the URL is repeated here and a ui-egui test keeps them equal.
@@ -19,8 +19,8 @@ pub const SUITE: &str = "https://github.com/mrcandrade/larfic/tree/main/suite-fi
 pub const MANIFESTO: &str = "https://github.com/mrcandrade/larfic/blob/main/suite-fisilab/MANIFESTO.md";
 /// The original project, PdfCraft by the ArtCraft Team and contributors.
 pub const GITHUB: &str = "https://github.com/storytold/pdfcraft";
-/// Where FisiPDF problems are reported.
-pub const ISSUES: &str = "https://github.com/mrcandrade/fisipdf/issues";
+/// Where FisiLab PDF problems are reported.
+pub const ISSUES: &str = "https://github.com/mrcandrade/fisilab-pdf/issues";
 
 /// A link and the registry command that opens it.
 #[derive(Clone, Copy, Debug)]

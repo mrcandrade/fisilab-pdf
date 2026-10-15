@@ -44,27 +44,36 @@ mod updates;
 #[path = "windows_manifest.rs"]
 mod windows_manifest;
 
-/// Freedesktop app id: the `.desktop` file name and the hicolor icon name. FisiPDF (Suíte
+/// Freedesktop app id: the `.desktop` file name and the hicolor icon name. PDF (Suíte
 /// FisiLab) uses its own id, so it never shares settings or a window class with an upstream
 /// PdfCraft install.
-const APP_ID: &str = "br.ufrgs.fisilab.fisipdf";
+const APP_ID: &str = "br.ufrgs.fisilab.pdf";
 
-/// The app icon: the Suíte FisiLab FisiPDF tile (assets/fisilab/), on every platform.
-const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/fisilab/fisipdf-256.png");
+/// The app icon: the Suíte FisiLab PDF tile (assets/fisilab/), on every platform.
+const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/fisilab/fisilab-pdf-256.png");
 
 /// The settings folder: `app.ron` and the `logs` folder (docs/development.md). In portable mode
-/// it is `FisiPDFData` beside the executable (#157). eframe would otherwise derive it from the
-/// app id; keep it under "FisiPDF" (never PdfCraft's folder).
+/// it is `FisiLabPDFData` beside the executable (#157). Otherwise it is named after the suite app,
+/// never a bare generic "PDF" nor PdfCraft's folder:
+/// `%APPDATA%\FisiLab PDF\data` (Windows), `~/Library/Application Support/FisiLab PDF` (macOS;
+/// eframe would turn the space into a dash) and `$XDG_DATA_HOME/fisilab-pdf` /
+/// `~/.local/share/fisilab-pdf` (others).
 fn settings_dir() -> Option<std::path::PathBuf> {
     if let Some(dir) = pdfcraft_ui_egui::portable::data_dir() {
         return Some(dir.to_path_buf());
     }
-    eframe::storage_dir("FisiPDF")
+    if cfg!(target_os = "macos") {
+        std::env::home_dir().map(|h| h.join("Library/Application Support/FisiLab PDF"))
+    } else if cfg!(windows) {
+        eframe::storage_dir("FisiLab PDF")
+    } else {
+        eframe::storage_dir("fisilab-pdf")
+    }
 }
 
 /// Desktop launchers (GNOME Files, KDE Dolphin…) only recognise an app as the default handler for a
 /// mime type if its `Exec` takes URIs (`%u`/`%U`), not just paths (`%F`); the packaged `.desktop`
-/// file uses `%U` accordingly (packaging/linux/br.ufrgs.fisilab.fisipdf.desktop). Decode a local
+/// file uses `%U` accordingly (packaging/linux/br.ufrgs.fisilab.pdf.desktop). Decode a local
 /// `file://` argument (`file:///path` or `file://localhost/path`) to a plain path here so the rest
 /// of the app, which only ever opens paths, is unaffected. Other schemes (`http://`, `mailto:`…),
 /// URIs naming another host, and plain paths pass through untouched.
@@ -139,7 +148,7 @@ fn main() -> eframe::Result {
             log::error!("{report}");
         } else {
             // `eprintln!` panics on a broken stderr pipe, and a panic inside the panic hook aborts.
-            let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("fisipdf: {report}\n"));
+            let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("fisilab-pdf: {report}\n"));
         }
     }));
     let mut files = Vec::new();
@@ -151,7 +160,7 @@ fn main() -> eframe::Result {
     while let Some(a) = args.next() {
         match a.as_str() {
             "--version" => {
-                println!("fisipdf {}", pdfcraft_engine::build_info::version());
+                println!("fisilab-pdf {}", pdfcraft_engine::build_info::version());
                 return Ok(());
             }
             "--control" => control_file = args.next(),
@@ -169,11 +178,11 @@ fn main() -> eframe::Result {
     // GNOME on Wayland leaves the window frame to the app (src/decorations.rs).
     let window_controls = if cfg!(any(target_os = "macos", target_os = "windows")) { None } else { decorations::app_drawn() };
     // The log file lives in the settings folder; opened after the arguments (so `--version` leaves
-    // no file behind). Records logged until now are written to it first. FisiPDF doesn't move
+    // no file behind). Records logged until now are written to it first. FisiLab PDF doesn't move
     // PdfCraft's or PrintCraft's folders: an upstream install keeps its own settings.
     if let (Some(logger), Some(dir)) = (logger, settings_dir()) {
         match logger.attach_dir(&dir.join("logs")) {
-            Ok(path) => log::info!("FisiPDF {}, log file {}", pdfcraft_engine::build_info::version(), path.display()),
+            Ok(path) => log::info!("FisiLab PDF {}, log file {}", pdfcraft_engine::build_info::version(), path.display()),
             // Standard error only by now (`attach_dir` gave up on the file); unlike `eprintln!`, never panics.
             Err(e) => log::warn!("no log file: {e}"),
         }
@@ -199,7 +208,7 @@ fn main() -> eframe::Result {
     // Suíte FisiLab: the CTA opening animation over the first ~3 s (FISILAB_NO_SPLASH=1 skips it).
     fisilab_brand::splash::enable();
     let result = eframe::run_native(
-        "FisiPDF",
+        "PDF",
         native_options(launch.integrated, launch.window_controls.is_some(), first),
         app_creator(
             launch.clone(),
@@ -217,7 +226,7 @@ fn main() -> eframe::Result {
             // usually still works there, so that's better than quitting.
             log::error!("the GPU renderer (wgpu) didn't start: {e}. Starting with OpenGL instead; set PDFCRAFT_RENDERER=gl to skip wgpu.");
             eframe::run_native(
-                "FisiPDF",
+                "PDF",
                 native_options(launch.integrated, launch.window_controls.is_some(), eframe::Renderer::Glow),
                 app_creator(
                     launch,
@@ -260,11 +269,11 @@ fn retry_with_gl(choice: RendererChoice, app_started: bool) -> bool {
 /// The window and renderer settings for one run.
 fn native_options(integrated: bool, app_frame: bool, renderer: eframe::Renderer) -> eframe::NativeOptions {
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title("FisiPDF")
+        .with_title("PDF")
         .with_inner_size([1440.0, 920.0])
         .with_min_inner_size([820.0, 520.0])
         .with_drag_and_drop(true)
-        // Wayland app id: matches packaging/linux/br.ufrgs.fisilab.fisipdf.desktop.
+        // Wayland app id: matches packaging/linux/br.ufrgs.fisilab.pdf.desktop.
         .with_app_id(APP_ID);
     // Dock, taskbar, Alt-Tab and launcher icon when running unbundled.
     match eframe::icon_data::from_png_bytes(APP_ICON_PNG) {
@@ -395,7 +404,7 @@ fn app_creator<'a>(
 /// `unsafe` calls.
 fn notify_software_renderer(app: &mut PdfCraftApp, device_type: eframe::wgpu::DeviceType) {
     if device_type == eframe::wgpu::DeviceType::Cpu {
-        app.notify_tr("FisiPDF is drawing without a graphics processor, so it may be slow. Updating the graphics driver may help.");
+        app.notify_tr("FisiLab PDF is drawing without a graphics processor, so it may be slow. Updating the graphics driver may help.");
     }
 }
 
@@ -413,7 +422,7 @@ fn open_control_channel(file: &str, endpoint: std::io::Result<pdfcraft_ui_egui::
             Ok(())
         }
         Err(e) => {
-            let message = format!("--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.fisipdf-control.json");
+            let message = format!("--control {file}: {e}. Use a control file in a folder only you can write, such as ~/.fisilab-pdf-control.json");
             log::error!("{message}");
             Err(message)
         }
@@ -1282,7 +1291,7 @@ mod tests {
     /// so it has to be the class the window carries: the app id, on Wayland and X11 alike.
     #[test]
     fn the_desktop_entry_names_the_window_class() {
-        let entry = include_str!("../../../packaging/linux/br.ufrgs.fisilab.fisipdf.desktop");
+        let entry = include_str!("../../../packaging/linux/br.ufrgs.fisilab.pdf.desktop");
         let class = entry.lines().find_map(|line| line.strip_prefix("StartupWMClass="));
         assert_eq!(class, Some(super::APP_ID));
     }

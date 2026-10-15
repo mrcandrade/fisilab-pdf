@@ -33,8 +33,9 @@ pub const KEEP: usize = 2;
 pub const MAX_FILE_BYTES: u64 = 16 * 1024 * 1024;
 /// Records kept in memory until the log file is attached.
 pub const MAX_PENDING: usize = 512;
-/// The built-in filter when `RUST_LOG` is unset or empty.
-pub const DEFAULT_FILTER: &str = "warn,pdfcraft*=info";
+/// The built-in filter when `RUST_LOG` is unset or empty. The desktop binary is `fisilab-pdf`, so its
+/// own records carry the target `fisilab_pdf::…`, not `pdfcraft…`.
+pub const DEFAULT_FILTER: &str = "warn,pdfcraft*=info,fisilab_pdf=info";
 
 /// Per-target level filter parsed from env_logger-style directives.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -279,6 +280,8 @@ mod tests {
         let f = Filter::parse(DEFAULT_FILTER);
         assert_eq!(f.level_for("pdfcraft"), LevelFilter::Info);
         assert_eq!(f.level_for("pdfcraft::updates"), LevelFilter::Info);
+        assert_eq!(f.level_for("fisilab_pdf"), LevelFilter::Info);
+        assert_eq!(f.level_for("fisilab_pdf::updates"), LevelFilter::Info);
         assert_eq!(f.level_for("pdfcraft_ui_egui::recovery"), LevelFilter::Info);
         assert_eq!(f.level_for("pdfcraft_render::raster"), LevelFilter::Info);
         assert_eq!(f.level_for("wgpu_core::device"), LevelFilter::Warn);

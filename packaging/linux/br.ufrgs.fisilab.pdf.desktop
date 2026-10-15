@@ -1,14 +1,14 @@
 [Desktop Entry]
 Type=Application
-Name=FisiPDF
+Name=PDF
 GenericName=Leitor e editor de PDF
 Comment=Leia, organize, combine, divida e proteja PDFs (Suíte FisiLab, UFRGS)
-Exec=fisipdf %U
-TryExec=fisipdf
+Exec=fisilab-pdf %U
+TryExec=fisilab-pdf
 Icon=ai.storyteller.pdfcraft
 Terminal=false
 StartupNotify=true
-StartupWMClass=br.ufrgs.fisilab.fisipdf
+StartupWMClass=br.ufrgs.fisilab.pdf
 Categories=Office;Viewer;
 Keywords=pdf;viewer;editor;annotate;sign;forms;merge;split;
 MimeType=application/pdf;

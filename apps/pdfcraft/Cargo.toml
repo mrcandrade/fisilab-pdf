@@ -1,13 +1,13 @@
 [package]
 name = "pdfcraft"
-description = "FisiPDF desktop app (Suíte FisiLab; based on PdfCraft)"
-default-run = "fisipdf"
+description = "PDF desktop app (Suíte FisiLab; based on PdfCraft)"
+default-run = "fisilab-pdf"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "fisipdf"
+name = "fisilab-pdf"
 path = "src/main.rs"
 
 [lints]

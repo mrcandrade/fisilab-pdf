@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/fisilab/fisipdf-256.png" alt="Ícone do FisiPDF" width="128">
+  <img src="assets/fisilab/fisilab-pdf-256.png" alt="Ícone do PDF" width="128">
 </p>
 
-<h1 align="center">FisiPDF</h1>
+<h1 align="center">PDF · Suíte FisiLab</h1>
 
 <p align="center">
   <b>Leitor e editor de PDF</b><br>
@@ -16,7 +16,7 @@
 
 ---
 
-O FisiPDF faz parte da [Suíte FisiLab](https://github.com/mrcandrade/larfic/tree/main/suite-fisilab):
+O **FisiLab PDF** (nome curto **PDF**) faz parte da [Suíte FisiLab](https://github.com/mrcandrade/larfic/tree/main/suite-fisilab):
 programas livres para ensinar, pesquisar e criar na universidade. Ele é uma versão modificada do
 [PdfCraft](https://github.com/storytold/pdfcraft), um aplicativo de PDF de código aberto escrito em
 Rust, e funciona sem conta, sem telemetria e sem nuvem.
@@ -39,16 +39,16 @@ Rust, e funciona sem conta, sem telemetria e sem nuvem.
   (<kbd>Ctrl</kbd>+<kbd>K</kbd>).
 - **Salva com segurança**: as gravações são incrementais (os bytes originais ficam intactos) e
   atômicas, com salvamento automático e recuperação depois de um fechamento inesperado.
-- **Linha de comando e automação**: o `fisipdf-cli` inspeciona, renderiza, combina, extrai e
+- **Linha de comando e automação**: o `fisilab-pdf-cli` inspeciona, renderiza, combina, extrai e
   divide PDFs, e pode ser usado em scripts.
 
 ## Instalação
 
 ### Windows
 
-Baixe o instalador `FisiPDF-Setup-<versão>.exe` no portal de downloads da
+Baixe o instalador `FisiLab-PDF-Setup-<versão>.exe` no portal de downloads da
 [Suíte FisiLab](https://github.com/mrcandrade/larfic/tree/main/suite-fisilab) ou na página de
-[versões do FisiPDF no GitHub](https://github.com/mrcandrade/fisipdf/releases) e execute-o.
+[versões do FisiLab PDF no GitHub](https://github.com/mrcandrade/fisilab-pdf/releases) e execute-o.
 A interface já abre em português do Brasil, no tema **UFRGS Noite** (o tema **UFRGS Dia** e os
 temas originais ficam em *Menu → Exibir → Tema de exibição*).
 
@@ -57,20 +57,20 @@ temas originais ficam em *Menu → Exibir → Tema de exibição*).
 É preciso o Rust 1.95 ou mais recente ([rustup.rs](https://rustup.rs)).
 
 ```sh
-git clone https://github.com/mrcandrade/fisipdf
-cd fisipdf
+git clone https://github.com/mrcandrade/fisilab-pdf
+cd fisilab-pdf
 cargo xtask models                               # baixa os modelos de OCR usados por "Digitalizar e OCR"
-cargo run --release -p pdfcraft -- arquivo.pdf   # o aplicativo (fisipdf.exe)
-cargo run --release -p pdfcraft-cli -- --help    # a linha de comando (fisipdf-cli.exe)
+cargo run --release -p pdfcraft -- arquivo.pdf   # o aplicativo (fisilab-pdf.exe)
+cargo run --release -p pdfcraft-cli -- --help    # a linha de comando (fisilab-pdf-cli.exe)
 ```
 
 Os pacotes Rust mantêm os nomes do projeto original (`pdfcraft`, `pdfcraft-cli`, …); os
-executáveis gerados se chamam `fisipdf` e `fisipdf-cli`. Notas de desenvolvimento estão em
+executáveis gerados se chamam `fisilab-pdf` e `fisilab-pdf-cli`. Notas de desenvolvimento estão em
 [docs/development.md](docs/development.md).
 
 ## Créditos
 
-O FisiPDF é baseado no **[PdfCraft](https://github.com/storytold/pdfcraft)**, criado pelo
+O FisiLab PDF é baseado no **[PdfCraft](https://github.com/storytold/pdfcraft)**, criado pelo
 **ArtCraft Team e contribuidores**, e distribuído, como o original, sob a licença
 [MIT](LICENSE-MIT) ou [Apache 2.0](LICENSE-APACHE), à sua escolha. Todo o trabalho de leitura,
 edição e formatos de arquivo é deles; agradecemos a todas as pessoas que contribuíram.

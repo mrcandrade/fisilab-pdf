@@ -51,7 +51,7 @@ fn open_view_menu(h: &mut Harness<'static, PdfCraftApp>) {
 #[test]
 fn toolbar_and_view_menu_share_the_theme_preferences() {
     let mut h = harness();
-    // FisiPDF starts in UFRGS Noite, whatever the desktop says.
+    // PDF starts in UFRGS Noite, whatever the desktop says.
     assert_theme(&h, ThemePreference::UfrgsNoite, ThemeKind::UfrgsNoite);
     click_toolbar(&mut h, "UFRGS Noite");
     assert_theme(&h, ThemePreference::UfrgsDia, ThemeKind::UfrgsDia);

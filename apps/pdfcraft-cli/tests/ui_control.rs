@@ -29,7 +29,7 @@ impl Drop for Scratch {
 }
 
 fn scratch(test: &str) -> Scratch {
-    let dir = std::env::temp_dir().join(format!("fisipdf-cli-ui-{test}-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("fisilab-pdf-cli-ui-{test}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     Scratch(dir)
@@ -89,7 +89,7 @@ fn write_private(path: &Path, text: &str) {
 }
 
 fn ui(control: &Path, method: &str) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_fisipdf-cli")).arg("ui").arg("--control").arg(control).arg(method).output().unwrap()
+    Command::new(env!("CARGO_BIN_EXE_fisilab-pdf-cli")).arg("ui").arg("--control").arg(control).arg(method).output().unwrap()
 }
 
 fn assert_refused(o: &Output, received: &str, expect: &str) {
@@ -121,7 +121,7 @@ fn a_control_file_of_your_own_works_without_a_writable_temp_folder() {
     let control = dir.join("pc.json");
     write_private(&control, &control_json(spy.port));
     let missing = dir.join("no-such-temp-folder");
-    let o = Command::new(env!("CARGO_BIN_EXE_fisipdf-cli"))
+    let o = Command::new(env!("CARGO_BIN_EXE_fisilab-pdf-cli"))
         .env("TMPDIR", &missing)
         .arg("ui")
         .arg("--control")

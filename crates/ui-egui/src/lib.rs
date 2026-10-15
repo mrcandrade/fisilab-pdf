@@ -1865,9 +1865,9 @@ impl PdfCraftApp {
             Err(e) => {
                 use pdfcraft_engine::links::BlockedLink;
                 let template = if matches!(e, BlockedLink::MailFile | BlockedLink::MailEncodedWord) {
-                    "{who} in this document tried to open an address FisiPDF won't open: {e}."
+                    "{who} in this document tried to open an address FisiLab PDF won't open: {e}."
                 } else {
-                    "{who} in this document tried to open an address FisiPDF won't open: {e}. Only web (http, https) and email (mailto) links open from documents."
+                    "{who} in this document tried to open an address FisiLab PDF won't open: {e}. Only web (http, https) and email (mailto) links open from documents."
                 };
                 self.notify_fmt(template, &[("who", tl!(origin.noun())), ("e", &e.to_string())]);
             }
@@ -2939,7 +2939,7 @@ impl eframe::App for PdfCraftApp {
             .and_then(|i| self.session.get(self.views[i].id))
             .map(|d| d.display_name())
             .or_else(|| self.combine_showing().then(|| tl!("Combine files").to_owned()))
-            .map_or_else(|| "FisiPDF".to_owned(), |name| format!("{name} — FisiPDF"));
+            .map_or_else(|| "PDF".to_owned(), |name| format!("{name} — PDF"));
         if title != self.window_title {
             ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
             self.window_title = title;
@@ -3005,10 +3005,10 @@ impl eframe::App for PdfCraftApp {
     }
 }
 
-/// FisiPDF in the Suíte FisiLab (UFRGS): what the suite's About window and opening animation say
+/// PDF in the Suíte FisiLab (UFRGS): what the suite's About window and opening animation say
 /// about this app.
 pub const APP_INFO: fisilab_brand::AppInfo = fisilab_brand::AppInfo {
-    name: "FisiPDF",
+    name: "PDF",
     tagline: "Leitor e editor de PDF",
     equivalent: "Adobe Acrobat",
     version: env!("CARGO_PKG_VERSION"),
@@ -3017,7 +3017,7 @@ pub const APP_INFO: fisilab_brand::AppInfo = fisilab_brand::AppInfo {
     upstream_copyright: "© 2026 ArtCraft Team e contribuidores do PdfCraft",
 };
 
-/// The interface language of a fresh FisiPDF install (the desktop app sets it before restoring
+/// The interface language of a fresh PDF install (the desktop app sets it before restoring
 /// saved settings): Brazilian Portuguese, for the UFRGS community.
 pub const DEFAULT_LANGUAGE: &str = "pt-br";
 

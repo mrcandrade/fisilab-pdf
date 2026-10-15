@@ -3,7 +3,7 @@
 //!
 //! Outlook attachments, Explorer double-clicks and Open With all start `pdfcraft.exe "<file>"`, so
 //! until now every file got its own process and window. The first PdfCraft listens on a Unix
-//! domain socket (Windows 10 1803 and later) in `%LOCALAPPDATA%\PdfCraft`, or in the data folder of
+//! domain socket (Windows 10 1803 and later) in `%LOCALAPPDATA%\FisiLab PDF`, or in the data folder of
 //! a portable copy. The socket is named after the Windows session (`instance-Console.sock`), so
 //! two sign-ins of the same user never open files in each other's windows, and it lives in the
 //! user's own profile, so other accounts can't create, replace or reach it: nobody else can
@@ -135,7 +135,7 @@ pub fn claim(files: &[String], may_hand_off: bool) -> Claim {
     }
 }
 
-/// The socket in `%LOCALAPPDATA%\PdfCraft` (beside the crash-recovery folder); none when
+/// The socket in `%LOCALAPPDATA%\FisiLab PDF` (beside the crash-recovery folder); none when
 /// `%LOCALAPPDATA%` is unset.
 #[cfg(windows)]
 fn socket_path() -> Option<std::path::PathBuf> {
@@ -145,7 +145,7 @@ fn socket_path() -> Option<std::path::PathBuf> {
     // own name so it never hands files to an installed copy (which keeps its settings elsewhere).
     // Never the portable folder itself: it may sit where other accounts can write (`C:\Tools`).
     let name = if pdfcraft_ui_egui::portable::data_dir().is_some() { format!("portable-{name}") } else { name };
-    std::env::var_os("LOCALAPPDATA").filter(|v| !v.is_empty()).map(|d| std::path::PathBuf::from(d).join("FisiPDF").join(name))
+    std::env::var_os("LOCALAPPDATA").filter(|v| !v.is_empty()).map(|d| std::path::PathBuf::from(d).join("FisiLab PDF").join(name))
 }
 
 /// The socket's file name for a Windows session (`SESSIONNAME`: `Console`, `RDP-Tcp#3`…). The
@@ -199,7 +199,7 @@ fn claim_at(path: &std::path::Path, files: &[String], may_hand_off: bool) -> Cla
                 return match hand_off(&stream, files) {
                     Ok(()) => Claim::HandedOff,
                     Err(e) => {
-                        log::warn!("couldn't hand the files to the running FisiPDF ({e}); opening a new window");
+                        log::warn!("couldn't hand the files to the running FisiLab PDF ({e}); opening a new window");
                         Claim::Alone
                     }
                 };
@@ -250,7 +250,7 @@ fn hand_off(stream: &uds_windows::UnixStream, files: &[String]) -> std::io::Resu
     writer.write_all(request(files).as_bytes())?;
     let mut reply = String::new();
     std::io::BufReader::new(stream.take(16)).read_line(&mut reply)?;
-    if reply == "ok\n" { Ok(()) } else { Err(std::io::Error::other("the running FisiPDF didn't confirm")) }
+    if reply == "ok\n" { Ok(()) } else { Err(std::io::Error::other("the running FisiLab PDF didn't confirm")) }
 }
 
 /// Accept launches on a background thread for as long as the process runs.
