@@ -1,36 +1,37 @@
-//! Asks GitHub for the latest release (Help ▸ Check for updates, issue #28). PDF (Suíte
-//! FisiLab) asks for its own releases at github.com/mrcandrade/fisilab-pdf, never upstream PdfCraft's.
+//! Asks the Suíte FisiLab release for the latest version (Help ▸ Check for updates, issue #28).
+//! PDF reads the `manifest.json` published with the latest suite release at
+//! github.com/mrcandrade/larfic, never upstream PdfCraft's releases.
 
 use std::time::Duration;
 
 use pdfcraft_ui_egui::updates::{RELEASES_PAGE, Release};
 
-const LATEST: &str = "https://api.github.com/repos/mrcandrade/fisilab-pdf/releases/latest";
+const MANIFEST: &str = "https://github.com/mrcandrade/larfic/releases/latest/download/manifest.json";
 
-/// The latest release. The answer is untrusted: its size is capped, and only a page under
-/// [`RELEASES_PAGE`] is ever offered for download (anything else falls back to that list).
+/// This program's entry in the manifest's `apps` list.
+const SLUG: &str = "fisilab-pdf";
+
+/// The version this program has in the latest suite release. The answer is untrusted: its
+/// size is capped, and the only page ever offered for download is [`RELEASES_PAGE`].
 pub fn latest_release() -> Result<Release, String> {
     let agent = ureq::Agent::config_builder()
         .timeout_global(Some(Duration::from_secs(10)))
+        // The download redirects to GitHub's storage: follow it, but only over HTTPS.
+        .https_only(true)
+        .max_redirects(5)
         .tls_config(ureq::tls::TlsConfig::builder().root_certs(os_roots()?).build())
         .build()
         .new_agent();
     let mut response = agent
-        .get(LATEST)
-        .header("Accept", "application/vnd.github+json")
+        .get(MANIFEST)
+        .header("Accept", "application/json")
         .header("User-Agent", concat!("FisiLab-PDF/", env!("CARGO_PKG_VERSION")))
-        // Read error statuses ourselves: a 403 from GitHub usually means its anonymous
-        // rate limit ran out, and the retry time rides along in a response header.
         .config()
         .http_status_as_error(false)
         .build()
         .call()
         .map_err(|e| format!("couldn't reach GitHub ({e})"))?;
     let status = response.status().as_u16();
-    if status == 403 {
-        let reset = response.headers().get("x-ratelimit-reset").and_then(|v| v.to_str().ok());
-        return Err(rate_limited(reset, now_unix()));
-    }
     if !(200..300).contains(&status) {
         return Err(format!("couldn't reach GitHub (http status: {status})"));
     }
@@ -48,79 +49,62 @@ fn os_roots() -> Result<ureq::tls::RootCerts, String> {
     Ok(ureq::tls::RootCerts::new_with_certs(&certs))
 }
 
-/// The current Unix time in seconds (0 when the clock gives nothing usable).
-fn now_unix() -> u64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0)
-}
-
-/// What to tell the user when GitHub answers 403: its anonymous quota (60 checks an hour,
-/// shared by everyone behind the same address) ran out. `reset` is the `x-ratelimit-reset`
-/// header, the Unix time the quota refills; `now` is the current Unix time. Anything
-/// surprising (no header, not a number, already past) falls back to asking for patience.
-fn rate_limited(reset: Option<&str>, now: u64) -> String {
-    const FALLBACK: &str = "GitHub is limiting update checks for now (shared hourly quota); try again later";
-    let wait = reset.and_then(|r| r.trim().parse::<u64>().ok()).and_then(|reset| reset.checked_sub(now)).filter(|&wait| wait > 0);
-    match wait {
-        Some(wait) => {
-            let minutes = wait.div_ceil(60).max(1);
-            let plural = if minutes == 1 { "" } else { "s" };
-            format!("GitHub is limiting update checks for now (shared hourly quota); try again in about {minutes} minute{plural}")
-        }
-        None => FALLBACK.into(),
-    }
-}
-
+/// Reads this program's entry from the manifest. The download page is always [`RELEASES_PAGE`]:
+/// nothing from the answer is ever opened.
 fn parse(body: &str) -> Result<Release, String> {
     let v: serde_json::Value = serde_json::from_str(body).map_err(|e| format!("unreadable answer ({e})"))?;
-    let version = v["tag_name"].as_str().filter(|t| !t.is_empty() && t.len() <= 64).ok_or("no release found")?.to_string();
-    let url = v["html_url"]
-        .as_str()
-        .filter(|u| u.strip_prefix(RELEASES_PAGE).is_some_and(|rest| rest.starts_with('/') && !rest.contains(['?', '#', '\\'])))
-        .unwrap_or(RELEASES_PAGE)
+    let version = v["apps"]
+        .as_array()
+        .and_then(|apps| apps.iter().find(|a| a["slug"].as_str() == Some(SLUG)))
+        .and_then(|a| a["version"].as_str())
+        .map(str::trim)
+        .filter(|t| !t.is_empty() && t.len() <= 64)
+        .ok_or("no release found")?
         .to_string();
-    Ok(Release { version, url })
+    Ok(Release { version, url: RELEASES_PAGE.to_string() })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    const MANIFEST_JSON: &str = r#"{"generated":"2026-10-15T12:00:00Z","suite":{"version":"2026.10.15"},"apps":[
+        {"slug":"fisilab-efeitos","name":"Efeitos","version":"3.1.0","file":"FisiLab-Efeitos-Setup-3.1.0.exe"},
+        {"slug":"fisilab-pdf","name":"PDF","version":"0.8.0","file":"FisiLab-PDF-Setup-0.8.0.exe"}]}"#;
+
     #[test]
-    fn answers_are_read_and_only_our_release_pages_are_offered() {
-        let r = parse(r#"{"tag_name":"v0.2.0","html_url":"https://github.com/mrcandrade/fisilab-pdf/releases/tag/v0.2.0"}"#).unwrap();
-        assert_eq!(r, Release { version: "v0.2.0".into(), url: "https://github.com/mrcandrade/fisilab-pdf/releases/tag/v0.2.0".into() });
-        for elsewhere in ["https://example.com/fisilab-pdf.exe", "https://github.com/mrcandrade/fisilab-pdf/releases.evil/x", "javascript:alert(1)"] {
-            let r = parse(&format!(r#"{{"tag_name":"v9.9.9","html_url":"{elsewhere}"}}"#)).unwrap();
-            assert_eq!(r.url, RELEASES_PAGE, "{elsewhere}");
-        }
+    fn our_entry_is_read_and_only_the_suite_release_page_is_offered() {
+        let r = parse(MANIFEST_JSON).unwrap();
+        assert_eq!(r, Release { version: "0.8.0".into(), url: "https://github.com/mrcandrade/larfic/releases/latest".into() });
+        assert!(RELEASES_PAGE.starts_with("https://github.com/mrcandrade/larfic/releases"));
+        // A hostile manifest cannot redirect the download link.
+        let r = parse(r#"{"apps":[{"slug":"fisilab-pdf","version":"9.9.9","url":"https://example.com/x.exe","file":"x.exe"}]}"#).unwrap();
+        assert_eq!(r.url, RELEASES_PAGE);
+        assert_eq!(r.version, "9.9.9");
+    }
+
+    #[test]
+    fn manifests_without_our_entry_or_unreadable_are_errors() {
+        assert!(parse(r#"{"apps":[{"slug":"fisilab-efeitos","version":"3.1.0"}]}"#).is_err());
+        assert!(parse(r#"{"apps":[]}"#).is_err());
+        assert!(parse(r#"{"apps":[{"slug":"fisilab-pdf"}]}"#).is_err());
+        assert!(parse(r#"{"apps":[{"slug":"fisilab-pdf","version":""}]}"#).is_err());
         assert!(parse(r#"{"message":"Not Found"}"#).is_err());
         assert!(parse("<html>").is_err());
     }
 
     #[test]
-    fn rate_limit_messages_name_the_wait() {
-        let limited = "GitHub is limiting update checks for now (shared hourly quota); try again in about 20 minutes";
-        assert_eq!(rate_limited(Some("1800001200"), 1800000000), limited);
-        // Rounds up: 61 seconds out reads as 2 minutes.
-        assert_eq!(
-            rate_limited(Some("1800000061"), 1800000000),
-            "GitHub is limiting update checks for now (shared hourly quota); try again in about 2 minutes"
-        );
-        assert_eq!(
-            rate_limited(Some("1800000060"), 1800000000),
-            "GitHub is limiting update checks for now (shared hourly quota); try again in about 1 minute"
-        );
-        // No header, not a number, or already past: ask for patience instead of a time.
-        let later = "GitHub is limiting update checks for now (shared hourly quota); try again later";
-        for bad in [None, Some(""), Some("soon"), Some("1799999999"), Some("1800000000")] {
-            assert_eq!(rate_limited(bad, 1800000000), later);
-        }
+    fn manifest_versions_compare_with_the_running_one() {
+        let r = parse(MANIFEST_JSON).unwrap();
+        assert!(pdfcraft_ui_egui::updates::is_newer(&r.version, "0.7.9"));
+        assert!(!pdfcraft_ui_egui::updates::is_newer(&r.version, "0.8.0"));
+        assert!(!pdfcraft_ui_egui::updates::is_newer(&r.version, "0.9.0"));
     }
 
     /// Live: asks GitHub over TLS with the OS's roots (`cargo test -p pdfcraft -- --ignored`).
     #[test]
     #[ignore = "needs network access"]
-    fn github_answers_with_the_latest_release() {
+    fn github_answers_with_the_latest_manifest() {
         let r = latest_release().unwrap();
         assert!(pdfcraft_ui_egui::updates::is_newer(&r.version, "0.0.0"), "{r:?}");
         assert!(r.url.starts_with(RELEASES_PAGE), "{r:?}");

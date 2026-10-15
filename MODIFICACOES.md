@@ -87,6 +87,15 @@ que foi alterado e por quê.
 - `packaging/windows/portable.txt` foi traduzido e aponta para as novas pastas.
 - O arquivo `.desktop` do Linux passou a se chamar `br.ufrgs.fisilab.pdf.desktop`.
 
+## Segurança e privacidade
+
+- *Ajuda › Verificar atualizações* agora consulta o `manifest.json` da última versão da Suíte
+  (`https://github.com/mrcandrade/larfic/releases/latest/download/manifest.json`), em vez de uma
+  página de versões do `fisilab-pdf` que não publica os instaladores. Lê só a entrada `fisilab-pdf`,
+  compara com a versão em execução e oferece apenas `https://github.com/mrcandrade/larfic/releases/latest`
+  para baixar (nada vindo da resposta é aberto). Continua só sob ação explícita do usuário, somente
+  HTTPS (inclusive nos redirecionamentos), com limite de 10 s e de tamanho da resposta.
+
 ## O que não mudou
 
 - Todo o motor de PDF, a renderização, a edição, os formatos de arquivo e as ferramentas.

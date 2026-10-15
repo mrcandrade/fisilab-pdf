@@ -11,13 +11,13 @@ use egui::{Align, Layout};
 
 use crate::{PdfCraftApp, theme, widgets};
 
-/// Where every PdfCraft release is listed.
-pub const RELEASES_PAGE: &str = "https://github.com/mrcandrade/fisilab-pdf/releases";
+/// Where the Suíte FisiLab installers are published (the latest suite release).
+pub const RELEASES_PAGE: &str = "https://github.com/mrcandrade/larfic/releases/latest";
 
 /// The latest published release.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Release {
-    /// Its version tag, such as `v0.2.0`.
+    /// Its version, such as `0.8.0` (a `v` prefix is tolerated).
     pub version: String,
     /// Its page on [`RELEASES_PAGE`], where the downloads are.
     pub url: String,
