@@ -3,7 +3,7 @@
 # exports VERSION, RELEASE and NFPM_ARCH.
 #
 #   nfpm package -f packaging/linux/nfpm.yaml -p deb -t dist/release/
-name: pdfcraft
+name: fisilab-pdf
 arch: ${NFPM_ARCH}
 platform: linux
 version: ${VERSION}
@@ -14,14 +14,15 @@ version_schema: semver
 release: ${RELEASE}
 section: graphics
 priority: optional
-maintainer: ${PDFCRAFT_MAINTAINER}
-vendor: Learning Machines LLC
-homepage: https://github.com/mrcandrade/larfic/tree/main/suite-fisilab
+maintainer: "FisiLab - LARFIC/UFRGS <mrcandrade@users.noreply.github.com>"
+vendor: FisiLab - LARFIC/UFRGS
+homepage: https://github.com/mrcandrade/larfic
 license: MIT OR Apache-2.0
 description: |-
-  Open-source, native PDF workbench: read, comment, fill and sign forms,
-  organize, combine, split, edit, redact, protect and export PDFs.
-  Includes pdfcraft-cli, a headless command runner and opt-in MCP server.
+  FisiLab PDF: leitor e editor de PDF da Suíte FisiLab (alternativa livre). Leia, comente,
+  preencha e assine formulários, organize, combine, divida, edite, oculte trechos, proteja e
+  exporte PDFs. Inclui o fisilab-pdf-cli, executor de comandos sem janela.
+  Baseado no PdfCraft, do ArtCraft Team e contribuidores (MIT ou Apache 2.0).
 
 # The binaries link only glibc and libgcc_s directly. Windowing (X11/Wayland, xkbcommon) and the
 # GPU (Vulkan, EGL/GL) are loaded at runtime, so they are dependencies/recommendations here
@@ -60,11 +61,11 @@ overrides:
       - xdg-desktop-portal
 
 contents:
-  - src: ${STAGE}/usr/bin/pdfcraft
-    dst: /usr/bin/pdfcraft
+  - src: ${STAGE}/usr/bin/fisilab-pdf
+    dst: /usr/bin/fisilab-pdf
     file_info: { mode: 0755 }
-  - src: ${STAGE}/usr/bin/pdfcraft-cli
-    dst: /usr/bin/pdfcraft-cli
+  - src: ${STAGE}/usr/bin/fisilab-pdf-cli
+    dst: /usr/bin/fisilab-pdf-cli
     file_info: { mode: 0755 }
   - src: ${STAGE}/usr/share/
     dst: /usr/share/

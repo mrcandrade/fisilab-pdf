@@ -2,13 +2,13 @@
 Type=Application
 Name=PDF
 GenericName=Leitor e editor de PDF
-Comment=Leia, organize, combine, divida e proteja PDFs (Suíte FisiLab, UFRGS)
+Comment=Leitor e editor de PDF — Suíte FisiLab (alternativa livre)
 Exec=fisilab-pdf %U
 TryExec=fisilab-pdf
-Icon=ai.storyteller.pdfcraft
+Icon=br.ufrgs.fisilab.pdf
 Terminal=false
 StartupNotify=true
 StartupWMClass=br.ufrgs.fisilab.pdf
 Categories=Office;Viewer;
-Keywords=pdf;viewer;editor;annotate;sign;forms;merge;split;
+Keywords=pdf;viewer;editor;annotate;sign;forms;merge;split;leitor;assinar;formulário;
 MimeType=application/pdf;

@@ -71,6 +71,7 @@ que foi alterado e por quê.
 - Onde o nome curto "PDF" seria confundido com o formato de arquivo (avisos, mensagens de erro,
   atualização disponível, ferramentas e instruções do servidor MCP, User-Agent), o programa é
   chamado de **FisiLab PDF**; título da janela, tela inicial, Sobre e menus continuam "PDF".
+- O empacotamento Linux (AppImage `FisiLab-PDF-<versão>-x86_64.AppImage` e .deb `fisilab-pdf_<versão>_amd64.deb`, em `packaging/linux/`) usa os novos nomes, ícones da suíte e o identificador `br.ufrgs.fisilab.pdf`.
 
 ## 5. Idioma
 
@@ -106,7 +107,7 @@ que foi alterado e por quê.
   histórico do projeto original.
 - `LICENSE-MIT`, `LICENSE-APACHE` e `ATTRIBUTION.md` (este é gerado a partir de `ATTRIBUTION.toml`
   e não foi regenerado).
-- Os scripts de empacotamento de macOS, Linux e FreeBSD e o MSI do Windows
+- Os scripts de empacotamento de macOS e FreeBSD e o MSI do Windows
   (`packaging/windows/*.wxs`, `package.ps1`) continuam com os nomes do PdfCraft; a suíte usa o seu
   próprio instalador.
 - As ferramentas de desenvolvimento em `xtask/` (capturas de tela, PDF de demonstração).

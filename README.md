@@ -50,6 +50,10 @@ Baixe o instalador `FisiLab-PDF-Setup-<versão>.exe` na [página de downloads da
 A interface já abre em português do Brasil, com as cores originais do PdfCraft. Os temas **Noite**
 (escuro) e **Dia** (claro) ficam em *Menu → Exibir → Tema de exibição*.
 
+### Linux
+
+Baixe o `FisiLab-PDF-<versão>-x86_64.AppImage` na [página de downloads da Suíte FisiLab](https://github.com/mrcandrade/larfic/releases/latest), marque-o como executável (`chmod +x` ou *Propriedades › Permitir executar*) e abra-o. Em Ubuntu/Debian também dá para instalar o `fisilab-pdf_<versão>_amd64.deb` com `sudo apt install ./fisilab-pdf_<versão>_amd64.deb`. Requer Ubuntu 22.04 ou mais recente (ou equivalente).
+
 ### Compilar a partir do código
 
 É preciso o Rust 1.95 ou mais recente ([rustup.rs](https://rustup.rs)).

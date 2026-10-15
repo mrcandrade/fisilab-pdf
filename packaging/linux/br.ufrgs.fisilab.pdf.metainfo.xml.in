@@ -1,28 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- AppStream metadata (software centres, Flathub). Template: package.sh and the Flatpak
+<!-- AppStream metadata (software centres). Template: package.sh and the Flatpak
      manifest substitute @VERSION@ and @DATE@ from Cargo.toml and the build date. -->
 <component type="desktop-application">
-  <id>ai.storyteller.pdfcraft</id>
+  <id>br.ufrgs.fisilab.pdf</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT OR Apache-2.0</project_license>
-  <name>PdfCraft</name>
-  <summary>Read, organize, combine, split and secure PDFs</summary>
-  <developer id="ai.storyteller">
-    <name>Learning Machines LLC</name>
+  <name>PDF</name>
+  <summary>Leitor e editor de PDF</summary>
+  <developer id="br.ufrgs.fisilab">
+    <name>FisiLab — LARFIC</name>
   </developer>
   <description>
     <p>
-      PdfCraft is an open-source PDF workbench. Read, comment on, fill in and sign PDFs;
-      organize, combine and split pages; edit, redact, protect and export documents.
+      O FisiLab PDF faz parte da Suíte FisiLab, alternativa livre para os alunos da UFRGS. Leia,
+      comente, preencha e assine PDFs; organize, combine e divida páginas; edite, oculte trechos,
+      proteja e exporte documentos.
+    </p>
+    <p>
+      Baseado no PdfCraft, do ArtCraft Team e contribuidores (MIT ou Apache 2.0).
     </p>
   </description>
   <launchable type="desktop-id">br.ufrgs.fisilab.pdf.desktop</launchable>
-  <icon type="stock">ai.storyteller.pdfcraft</icon>
+  <icon type="stock">br.ufrgs.fisilab.pdf</icon>
   <!-- Only url types known to appstream 0.15 (Ubuntu 22.04, where CI validates): no vcs-browser. -->
-  <url type="homepage">https://github.com/mrcandrade/larfic/tree/main/suite-fisilab</url>
-  <url type="bugtracker">https://github.com/storytold/pdfcraft/issues</url>
-  <url type="help">https://github.com/storytold/pdfcraft</url>
-  <url type="contact">https://github.com/mrcandrade/fisilab-pdf/issues</url>
+  <url type="homepage">https://github.com/mrcandrade/larfic</url>
+  <url type="bugtracker">https://github.com/mrcandrade/fisilab-pdf/issues</url>
   <categories>
     <category>Office</category>
     <category>Viewer</category>
@@ -33,12 +35,6 @@
     <keyword>annotate</keyword>
     <keyword>forms</keyword>
   </keywords>
-  <screenshots>
-    <screenshot type="default">
-      <caption>A PDF open with its threaded comments</caption>
-      <image>https://raw.githubusercontent.com/storytold/pdfcraft/main/docs/images/pdfcraft-viewer.png</image>
-    </screenshot>
-  </screenshots>
   <branding>
     <color type="primary" scheme_preference="light">#9fd0ff</color>
     <color type="primary" scheme_preference="dark">#1f64ba</color>
@@ -52,7 +48,7 @@
     <control>tablet</control>
   </supports>
   <provides>
-    <binary>pdfcraft</binary>
+    <binary>fisilab-pdf</binary>
     <mediatype>application/pdf</mediatype>
   </provides>
   <content_rating type="oars-1.1"/>
