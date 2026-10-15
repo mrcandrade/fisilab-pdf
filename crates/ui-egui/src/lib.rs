@@ -881,7 +881,7 @@ impl PdfCraftApp {
             quick_tool: QuickTool::Select,
             space_hand: None,
             comment_prefs: Default::default(),
-            // Suíte FisiLab: UFRGS Noite until the user chooses another theme.
+            // The upstream default theme (Dia) until the user chooses another.
             theme: ThemeKind::default(),
             theme_preference: ThemePreference::default(),
             reading_colors: Default::default(),
@@ -2335,12 +2335,10 @@ impl PdfCraftApp {
             }
             ("theme", _) => {
                 let preference = match value {
-                    "ufrgsNoite" | "ufrgs-noite" | "noite" => ThemePreference::UfrgsNoite,
-                    "ufrgsDia" | "ufrgs-dia" | "dia" => ThemePreference::UfrgsDia,
                     "system" => ThemePreference::System,
-                    "light" => ThemePreference::Light,
-                    "dark" => ThemePreference::Dark,
-                    _ => return Err("theme must be ufrgsNoite, ufrgsDia, light, dark, or system".into()),
+                    "light" | "dia" | "day" => ThemePreference::Light,
+                    "dark" | "noite" | "night" => ThemePreference::Dark,
+                    _ => return Err("theme must be light, dark, or system".into()),
                 };
                 self.set_theme_preference(preference);
             }

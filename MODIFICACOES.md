@@ -24,13 +24,13 @@ que foi alterado e por quê.
 
 - Novo crate `crates/fisilab-brand` (compartilhado pelos apps da suíte): paleta, tela de abertura
   com a logo do CTA e a janela "Sobre a Suíte FisiLab".
-- **Temas "UFRGS Noite" (escuro, padrão) e "UFRGS Dia" (claro)** em `crates/ui-egui/src/theme.rs`,
-  construídos a partir de `fisilab_brand::palette::{NOITE, DIA}`: fundo, painéis, cartões, bordas,
-  texto, destaque (vermelho da chama), foco e links (azul CTA/UFRGS), seleção, avisos, erros e
-  sombras derivados das cores da marca. O tamanho dos cantos e o restante do layout são os do
-  PdfCraft. Os temas originais "Light gray" e "Dark gray" continuam disponíveis em
-  *Exibir → Tema de exibição* e em Preferências → Aparência.
-- "Usar configuração do sistema" alterna entre UFRGS Noite e UFRGS Dia conforme o sistema.
+- **Paleta original do PdfCraft**, sem cores próprias da suíte. Os dois temas do PdfCraft ganharam
+  os nomes **"Noite"** (escuro) e **"Dia"** (claro, o padrão), listados em *Exibir → Tema de
+  exibição* e em Preferências → Aparência (`crates/ui-egui/src/theme.rs`). O nome do tema
+  aceita também `noite`/`dia` (e `night`/`day`) em `--theme` e `ui.set`.
+- "Usar configuração do sistema" alterna entre Noite e Dia conforme o sistema.
+- O português do Brasil é o idioma da primeira abertura (definido em `apps/pdfcraft/src/main.rs`
+  só quando não há preferência salva).
 - Tela de abertura (cerca de 3 s, pode ser pulada com um clique ou tecla; `FISILAB_NO_SPLASH=1`
   a desliga), chamada em `apps/pdfcraft/src/main.rs`.
 - Novo item **Ajuda → Sobre a Suíte FisiLab…** (comando `help.fisilab`) e um botão "Suíte

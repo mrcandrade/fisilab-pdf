@@ -570,8 +570,8 @@ mod tests {
         "Manifesto pelas tecnologias livres",
         "Projeto original (PdfCraft)",
         "Reportar um problema",
-        "UFRGS Noite",
-        "UFRGS Dia",
+        "Noite",
+        "Dia",
     ];
 
     /// Every catalog has the suite's labels, unchanged, and the Help menu's label matches the

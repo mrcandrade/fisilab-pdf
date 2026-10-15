@@ -272,14 +272,13 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                     }
                     let icon = match app.theme_preference {
                         ThemePreference::System => "monitor",
-                        ThemePreference::UfrgsDia | ThemePreference::Light => "sun",
-                        ThemePreference::UfrgsNoite | ThemePreference::Dark => "moon",
+                        ThemePreference::Light => "sun",
+                        ThemePreference::Dark => "moon",
                     };
                     let label = tl!(app.theme_preference.label());
                     let tip = format!("{}: {label}", tl!("Display theme"));
                     let response = icons::button(ui, icon, button, false, &tip);
-                    // A click cycles UFRGS Noite, UFRGS Dia, System, Light, Dark; a right-click
-                    // opens the menu.
+                    // A click cycles Noite, Dia, System; a right-click opens the menu.
                     if response.clicked() {
                         app.execute(app.theme_preference.next().command());
                     }

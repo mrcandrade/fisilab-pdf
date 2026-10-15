@@ -20,16 +20,16 @@ fn assert_theme(h: &Harness<'static, PdfCraftApp>, preference: ThemePreference, 
     assert_eq!(h.state().theme_preference, preference);
     assert_eq!(h.state().theme, kind);
     assert_eq!(Tokens::get(&h.ctx).kind, kind);
-    assert_eq!(h.ctx.global_style().visuals.dark_mode, kind.is_dark());
+    assert_eq!(h.ctx.global_style().visuals.dark_mode, kind == ThemeKind::Dark);
     assert_eq!(h.ctx.options(|o| o.theme_preference), egui::ThemePreference::System);
     for branch in [egui::Theme::Light, egui::Theme::Dark] {
         let style = h.ctx.style_of(branch);
-        assert_eq!(style.visuals.dark_mode, kind.is_dark());
+        assert_eq!(style.visuals.dark_mode, kind == ThemeKind::Dark);
         assert_eq!(style.visuals.panel_fill, Tokens::for_kind(kind).panel);
     }
 }
 
-/// A click on the title bar's theme button cycles UFRGS Noite, UFRGS Dia, System, Light, Dark.
+/// A click on the title bar's theme button cycles Light, Dark, System.
 fn click_toolbar(h: &mut Harness<'static, PdfCraftApp>, label: &str) {
     h.get_by_label(&format!("Display theme: {label}")).click();
     h.run_steps(3);
@@ -43,67 +43,48 @@ fn open_view_menu(h: &mut Harness<'static, PdfCraftApp>) {
     assert!(h.query_by_label("Switch light / dark theme").is_none());
     h.get_by_label("Display theme ⏵").hover();
     h.run_steps(3);
-    for choice in ["UFRGS Noite", "UFRGS Dia", "Use system setting", "Light gray", "Dark gray"] {
+    for choice in ["Use system setting", "Dia", "Noite"] {
         h.get_by_label(choice);
     }
 }
 
 #[test]
-fn toolbar_and_view_menu_share_the_theme_preferences() {
+fn toolbar_and_view_menu_share_three_state_preferences() {
     let mut h = harness();
-    // PDF starts in UFRGS Noite, whatever the desktop says.
-    assert_theme(&h, ThemePreference::UfrgsNoite, ThemeKind::UfrgsNoite);
-    click_toolbar(&mut h, "UFRGS Noite");
-    assert_theme(&h, ThemePreference::UfrgsDia, ThemeKind::UfrgsDia);
-    click_toolbar(&mut h, "UFRGS Dia");
-    // Following a dark desktop draws UFRGS Noite.
-    assert_theme(&h, ThemePreference::System, ThemeKind::UfrgsNoite);
-    click_toolbar(&mut h, "Use system setting");
     // Explicit light wins even on a dark desktop, including egui's popup style.
     assert_theme(&h, ThemePreference::Light, ThemeKind::Light);
-    click_toolbar(&mut h, "Light gray");
+    click_toolbar(&mut h, "Dia");
     assert_theme(&h, ThemePreference::Dark, ThemeKind::Dark);
-    click_toolbar(&mut h, "Dark gray");
-    assert_theme(&h, ThemePreference::UfrgsNoite, ThemeKind::UfrgsNoite);
+    click_toolbar(&mut h, "Noite");
+    assert_theme(&h, ThemePreference::System, ThemeKind::Dark);
 
     open_view_menu(&mut h);
-    h.get_by_label("Light gray").click();
+    h.get_by_label("Dia").click();
     h.run_steps(3);
     assert_theme(&h, ThemePreference::Light, ThemeKind::Light);
-    click_toolbar(&mut h, "Light gray");
+    click_toolbar(&mut h, "Dia");
     assert_theme(&h, ThemePreference::Dark, ThemeKind::Dark);
 
     open_view_menu(&mut h);
     h.get_by_label("Use system setting").click();
     h.run_steps(3);
-    assert_theme(&h, ThemePreference::System, ThemeKind::UfrgsNoite);
+    assert_theme(&h, ThemePreference::System, ThemeKind::Dark);
     h.input_mut().system_theme = Some(egui::Theme::Light);
     h.run_steps(3);
-    assert_theme(&h, ThemePreference::System, ThemeKind::UfrgsDia);
+    assert_theme(&h, ThemePreference::System, ThemeKind::Light);
     click_toolbar(&mut h, "Use system setting");
-    click_toolbar(&mut h, "Light gray");
+    click_toolbar(&mut h, "Dia");
     // A manual choice exits system mode and survives subsequent OS changes.
     h.input_mut().system_theme = Some(egui::Theme::Dark);
     h.run_steps(2);
     h.input_mut().system_theme = Some(egui::Theme::Light);
     h.run_steps(2);
     assert_theme(&h, ThemePreference::Dark, ThemeKind::Dark);
-
-    open_view_menu(&mut h);
-    h.get_by_label("UFRGS Dia").click();
-    h.run_steps(3);
-    assert_theme(&h, ThemePreference::UfrgsDia, ThemeKind::UfrgsDia);
 }
 
 #[test]
 fn saved_preferences_restore_with_legacy_light_dark_settings() {
-    for (value, preference) in [
-        ("light", ThemePreference::Light),
-        ("dark", ThemePreference::Dark),
-        ("system", ThemePreference::System),
-        ("ufrgsNoite", ThemePreference::UfrgsNoite),
-        ("ufrgsDia", ThemePreference::UfrgsDia),
-    ] {
+    for (value, preference) in [("light", ThemePreference::Light), ("dark", ThemePreference::Dark), ("system", ThemePreference::System)] {
         let mut app = PdfCraftApp::new();
         app.set_option("language", "en").unwrap();
         app.set_option("theme", value).unwrap();
@@ -121,9 +102,6 @@ fn saved_preferences_restore_with_legacy_light_dark_settings() {
     app.restore(r#"{"theme":"Light"}"#);
     assert_eq!(app.theme_preference, ThemePreference::Light);
     assert_eq!(app.theme, ThemeKind::Light);
-    app.restore(r#"{"theme":"ufrgsDia"}"#);
-    assert_eq!(app.theme_preference, ThemePreference::UfrgsDia);
-    assert_eq!(app.theme, ThemeKind::UfrgsDia);
     app.restore(r#"{"theme":"System"}"#);
     app.restore(r#"{"theme":"Purple"}"#);
     assert_eq!(app.theme_preference, ThemePreference::System);
@@ -138,19 +116,12 @@ fn commands_and_options_apply_before_the_first_frame() {
     assert_eq!(app.theme, ThemeKind::Dark);
     app.run_command("view.theme.system");
     assert_eq!(app.theme_preference, ThemePreference::System);
-    assert_eq!(app.theme, ThemeKind::UfrgsNoite);
-    // The existing palette/control toggle also goes through the preference setter, between the
-    // light and dark theme of one family.
-    app.run_command("view.theme");
-    assert_eq!(app.theme_preference, ThemePreference::UfrgsDia);
-    assert_eq!(app.theme, ThemeKind::UfrgsDia);
-    app.run_command("view.theme.light");
+    assert_eq!(app.theme, ThemeKind::Light);
+    // The existing palette/control toggle also goes through the preference setter.
     app.run_command("view.theme");
     assert_eq!(app.theme_preference, ThemePreference::Dark);
-    app.run_command("view.theme.ufrgs_noite");
-    assert_eq!(app.theme, ThemeKind::UfrgsNoite);
-    app.run_command("view.theme.ufrgs_dia");
-    assert_eq!(app.theme, ThemeKind::UfrgsDia);
+    assert_eq!(app.theme, ThemeKind::Dark);
+    app.run_command("view.theme.light");
     app.set_option("theme", "dark").unwrap();
     assert!(app.set_option("theme", "purple").unwrap_err().contains("light, dark, or system"));
     assert_eq!(app.theme_preference, ThemePreference::Dark);
@@ -166,10 +137,10 @@ fn restored_system_tracks_native_input_without_rewriting_saved_preference() {
         app
     });
     for (input, expected) in [
-        (Some(egui::Theme::Dark), ThemeKind::UfrgsNoite),
-        (Some(egui::Theme::Light), ThemeKind::UfrgsDia),
-        (None, ThemeKind::UfrgsNoite),
-        (Some(egui::Theme::Dark), ThemeKind::UfrgsNoite),
+        (Some(egui::Theme::Dark), ThemeKind::Dark),
+        (Some(egui::Theme::Light), ThemeKind::Light),
+        (None, ThemeKind::Light),
+        (Some(egui::Theme::Dark), ThemeKind::Dark),
     ] {
         h.input_mut().system_theme = input;
         h.run_steps(3);
@@ -187,11 +158,11 @@ fn restored_system_tracks_native_input_without_rewriting_saved_preference() {
 }
 
 #[test]
-fn unknown_system_uses_ufrgs_noite_after_a_manual_light_choice() {
+fn unknown_system_uses_light_after_a_manual_dark_choice() {
     let mut app = PdfCraftApp::new();
-    app.set_theme_preference(ThemePreference::Light);
+    app.set_theme_preference(ThemePreference::Dark);
     app.set_theme_preference(ThemePreference::System);
-    assert_eq!(app.theme, ThemeKind::UfrgsNoite);
+    assert_eq!(app.theme, ThemeKind::Light);
     assert_eq!(serde_json::from_str::<serde_json::Value>(&app.persist()).unwrap()["theme"], "System");
 }
 
@@ -211,7 +182,7 @@ fn native_appearance_remains_inherited_for_every_saved_choice() {
             }
         }
     }
-    for preference in ThemePreference::ALL {
+    for preference in [ThemePreference::System, ThemePreference::Light, ThemePreference::Dark] {
         let commands = NativeCommands(Default::default());
         let observed = commands.clone();
         let mut h = Harness::builder().with_size(egui::vec2(1100.0, 800.0)).build_eframe(move |cc| {
@@ -231,5 +202,19 @@ fn native_appearance_remains_inherited_for_every_saved_choice() {
         assert!(!commands.is_empty());
         assert!(commands.iter().all(|theme| *theme == egui::SystemTheme::SystemDefault), "{commands:?}");
         assert_eq!(h.ctx.options(|o| o.theme_preference), egui::ThemePreference::System);
+    }
+}
+
+#[test]
+fn noite_and_dia_are_accepted_theme_names() {
+    for (value, preference) in [
+        ("noite", ThemePreference::Dark),
+        ("night", ThemePreference::Dark),
+        ("dia", ThemePreference::Light),
+        ("day", ThemePreference::Light),
+    ] {
+        let mut app = PdfCraftApp::new();
+        app.set_option("theme", value).unwrap();
+        assert_eq!(app.theme_preference, preference, "{value}");
     }
 }

@@ -49,8 +49,8 @@ Rust, e funciona sem conta, sem telemetria e sem nuvem.
 Baixe o instalador `FisiLab-PDF-Setup-<versão>.exe` no portal de downloads da
 [Suíte FisiLab](https://github.com/mrcandrade/larfic/tree/main/suite-fisilab) ou na página de
 [versões do FisiLab PDF no GitHub](https://github.com/mrcandrade/fisilab-pdf/releases) e execute-o.
-A interface já abre em português do Brasil, no tema **UFRGS Noite** (o tema **UFRGS Dia** e os
-temas originais ficam em *Menu → Exibir → Tema de exibição*).
+A interface já abre em português do Brasil, com as cores originais do PdfCraft. Os temas **Noite**
+(escuro) e **Dia** (claro) ficam em *Menu → Exibir → Tema de exibição*.
 
 ### Compilar a partir do código
 

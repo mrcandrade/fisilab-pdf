@@ -7,14 +7,12 @@ use crate::PdfCraftApp;
 use crate::theme::{self, ThemeKind, ThemePreference, Tokens};
 use crate::widgets;
 
-/// The themes each card offers, the Suíte FisiLab's first; a new theme is one more row here.
-pub const LIGHT_THEMES: &[(ThemeKind, &str)] = &[(ThemeKind::UfrgsDia, "UFRGS Dia"), (ThemeKind::Light, "Light gray")];
-pub const DARK_THEMES: &[(ThemeKind, &str)] = &[(ThemeKind::UfrgsNoite, "UFRGS Noite"), (ThemeKind::Dark, "Dark gray")];
+/// The themes each card offers: "Dia" and "Noite", the upstream light and dark themes.
+pub const LIGHT_THEMES: &[(ThemeKind, &str)] = &[(ThemeKind::Light, "Dia")];
+pub const DARK_THEMES: &[(ThemeKind, &str)] = &[(ThemeKind::Dark, "Noite")];
 
 fn mode_label(preference: ThemePreference) -> &'static str {
     match preference {
-        ThemePreference::UfrgsNoite => "UFRGS Noite",
-        ThemePreference::UfrgsDia => "UFRGS Dia",
         ThemePreference::System => "Use system setting",
         ThemePreference::Light => "Light",
         ThemePreference::Dark => "Dark",
@@ -114,7 +112,7 @@ pub fn preferences_section(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens)
     ui.horizontal(|ui| {
         ui.label(tl!("Appearance mode"));
         egui::ComboBox::from_id_salt("appearance-mode").selected_text(tl!(mode_label(app.theme_preference))).show_ui(ui, |ui| {
-            for preference in ThemePreference::ALL {
+            for preference in [ThemePreference::System, ThemePreference::Light, ThemePreference::Dark] {
                 if ui.selectable_label(app.theme_preference == preference, tl!(mode_label(preference))).clicked() {
                     app.execute(preference.command());
                     ui.close();
@@ -164,10 +162,7 @@ mod tests {
         );
         h.run();
         assert!(h.query_by_label("Light theme").is_some() && h.query_by_label("Dark theme").is_some());
-        assert!(h.query_by_label("Light gray").is_some() && h.query_by_label("Dark gray").is_some());
-        assert!(h.query_by_label("UFRGS Dia").is_some(), "the suite's light theme is on the light card");
-        // UFRGS Noite, the default, is a theme on the dark card (and the chosen mode).
-        assert!(h.query_all_by_label("UFRGS Noite").count() >= 1);
+        assert!(h.query_by_label("Dia").is_some() && h.query_by_label("Noite").is_some());
         assert_eq!(h.query_all_by_label("Active").count(), 1);
         if let Ok(path) = std::env::var("PDFCRAFT_APPEARANCE_SHOT") {
             h.render().unwrap().save(path).unwrap();
@@ -185,8 +180,8 @@ mod tests {
         h.run();
         assert_eq!(h.state().theme_preference, ThemePreference::System);
         // A theme card's radio chooses that theme.
-        h.get_by_label("UFRGS Dia").click();
+        h.get_by_label("Noite").click();
         h.run();
-        assert_eq!(h.state().theme_preference, ThemePreference::UfrgsDia);
+        assert_eq!(h.state().theme_preference, ThemePreference::Dark);
     }
 }
